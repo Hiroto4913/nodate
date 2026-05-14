@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>茶割管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0e0e;
+  --bg2: #181818;
+  --bg3: #222;
+  --border: #2e2e2e;
+  --border2: #3a3a3a;
+  --text: #f0ede8;
+  --text2: #888;
+  --text3: #555;
+  --accent: #c8a96e;
+  --accent2: #e8c98e;
+  --green: #5a9e7a;
+  --red: #c06060;
+  --blue: #5a82b4;
+  --font: 'Noto Sans JP', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --r: 10px;
+  --r2: 6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); }
+
+/* ── Layout ── */
+.app { display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; min-height: 100vh; }
+.topbar { padding: 18px 20px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; justify-content: space-between; background: var(--bg); position: sticky; top: 0; z-index: 10; }
+.topbar-title { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; color: var(--accent); }
+.topbar-month { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+.content { flex: 1; padding: 16px; overflow-y: auto; padding-bottom: 80px; }
+.nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--bg2); border-top: 1px solid var(--border); display: flex; z-index: 20; }
+.nav-btn { flex: 1; padding: 10px 4px 12px; background: none; border: none; color: var(--text3); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-family: var(--font); letter-spacing: 0.04em; transition: color 0.15s; }
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.nav-btn.active { color: var(--accent); }
+
+/* ── Page ── */
+.page { display: none; }
+.page.active { display: block; }
+.section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; margin-bottom: 14px; }
+.section-title { font-size: 11px; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 14px; text-transform: uppercase; font-family: var(--mono); }
+
+/* ── Form ── */
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 5px; letter-spacing: 0.06em; }
+.field input, .field select, .field textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--r2); color: var(--text); padding: 10px 12px;
+  font-size: 15px; font-family: var(--font); outline: none;
+  -webkit-appearance: none; appearance: none;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { width: 100%; padding: 13px; border: none; border-radius: var(--r2); font-size: 15px; font-family: var(--font); font-weight: 700; cursor: pointer; letter-spacing: 0.06em; transition: opacity 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.98); opacity: 0.85; }
+.btn-primary { background: var(--accent); color: #111; }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); margin-top: 8px; }
+
+/* ── Stats ── */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; }
+.stat-label { font-size: 10px; color: var(--text2); letter-spacing: 0.08em; font-family: var(--mono); }
+.stat-val { font-size: 22px; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1; font-family: var(--mono); }
+.stat-val.accent { color: var(--accent); }
+.stat-val.green { color: var(--green); }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* ── List rows ── */
+.list-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+.list-row:last-child { border-bottom: none; padding-bottom: 0; }
+.list-main { flex: 1; font-size: 14px; color: var(--text); }
+.list-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.list-val { font-size: 14px; font-family: var(--mono); color: var(--text); min-width: 64px; text-align: right; }
+.list-val.green { color: var(--green); }
+.list-val.red { color: var(--red); }
+
+/* ── Bar chart ── */
+.bar-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.bar-row:last-child { border-bottom: none; }
+.bar-name { font-size: 13px; color: var(--text); min-width: 100px; }
+.bar-wrap { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 5px; background: var(--accent); border-radius: 3px; transition: width 0.5s ease; }
+.bar-count { font-size: 12px; font-family: var(--mono); color: var(--text2); min-width: 40px; text-align: right; }
+
+/* ── PL ── */
+.pl-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.pl-row:last-child { border-bottom: none; }
+.pl-row.total { font-weight: 700; font-size: 15px; padding-top: 12px; }
+.pl-label { color: var(--text2); }
+.pl-val { font-family: var(--mono); }
+
+/* ── Toast ── */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--r2); padding: 10px 20px; font-size: 13px; color: var(--text); z-index: 100; transition: transform 0.25s ease; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error { border-color: var(--red); color: var(--red); }
+
+/* ── Loading ── */
+.loading { text-align: center; padding: 32px; color: var(--text3); font-size: 13px; font-family: var(--mono); }
+.empty { text-align: center; padding: 24px; color: var(--text3); font-size: 13px; }
+
+/* ── Spinner ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle; margin-right: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="topbar-title">茶割管理</span>
+    <span class="topbar-month" id="topbar-month">読み込み中...</span>
+  </div>
+
+  <div class="content">
+    <!-- 売上入力 -->
+    <div id="page-sales" class="page active">
+      <div class="section">
+        <div class="section-title">営業情報</div>
+        <div class="field"><label>営業日</label><input type="date" id="s-date"></div>
+        <div class="field">
+          <label>時間帯</label>
+          <select id="s-slot">
+            <option>18:00〜19:00</option><option>19:00〜20:00</option>
+            <option>20:00〜21:00</option><option>21:00〜22:00</option>
+            <option>22:00〜23:00</option><option>23:00〜閉店</option>
+          </select>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">ドリンク</div>
+        <div class="field">
+          <label>ドリンク名</label>
+          <select id="s-drink">
+            <option>緑茶割り</option><option>ほうじ茶割り</option>
+            <option>麦茶割り</option><option>玄米茶割り</option>
+            <option>烏龍茶割り</option><option>その他</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div class="field"><label>単価（円）</label><input type="number" id="s-price" value="600" min="0"></div>
+          <div class="field"><label>杯数</label><input type="number" id="s-cups" value="1" min="1"></div>
+        </div>
+        <div class="field"><label>メモ（任意）</label><input type="text" id="s-memo" placeholder="天気・客数など"></div>
+        <button class="btn btn-primary" onclick="submitSale()">売上を記録する</button>
+      </div>
+    </div>
+
+    <!-- レポート -->
+    <div id="page-report" class="page">
+      <div id="report-content"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+
+    <!-- 仕入れ -->
+    <div id="page-cost" class="page">
+      <div class="section">
+        <div class="section-title">仕入れ記録</div>
+        <div class="field"><label>日付</label><input type="date" id="c-date"></div>
+        <div class="field"><label>品目</label><input type="text" id="c-item" placeholder="緑茶ティーバッグ 50個入り"></div>
+        <div class="field">
+          <label>カテゴリ</label>
+          <select id="c-cat">
+            <option>茶葉・原料</option><option>酒類</option>
+            <option>消耗品</option><option>その他</option>
+          </select>
+        </div>
+        <div class="field"><label>金額（円）</label><input type="number" id="c-amount" placeholder="2000" min="0"></div>
+        <button class="btn btn-primary" onclick="submitCost()">仕入れを記録する</button>
+      </div>
+      <div id="cost-list-wrap">
+        <div class="section">
+          <div class="section-title">今月の仕入れ</div>
+          <div id="cost-list"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 収支 -->
+    <div id="page-pl" class="page">
+      <div id="pl-content"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('sales',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>売上入力
+    </button>
+    <button class="nav-btn" onclick="showPage('report',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="13" width="4" height="8" rx="1"/><rect x="10" y="9" width="4" height="12" rx="1"/><rect x="17" y="5" width="4" height="16" rx="1"/></svg>レポート
+    </button>
+    <button class="nav-btn" onclick="showPage('cost',this)">
+      <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8v4h8V3zM16 17h-8v4h8v-4z"/></svg>仕入れ
+    </button>
+    <button class="nav-btn" onclick="showPage('pl',this)">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>収支
+    </button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbw6Kn_R_WdbV3F4teZEm7gmclg07NZ-dJhxGYpKENaG3K-Kw53xf39vL9pfiMcP5YPF/exec";
+
+// ── 今日の日付をデフォルトに ──
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+document.getElementById("s-date").value = todayStr();
+document.getElementById("c-date").value = todayStr();
+
+// 今月表示
+const now = new Date();
+document.getElementById("topbar-month").textContent =
+  `${now.getFullYear()}年${now.getMonth()+1}月`;
+
+// ── ページ切替 ──
+function showPage(name, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("page-" + name).classList.add("active");
+  btn.classList.add("active");
+  if (name === "report") loadReport();
+  if (name === "cost")   loadCostList();
+  if (name === "pl")     loadPL();
+}
+
+// ── Toast ──
+function showToast(msg, type = "") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(() => t.className = "toast", 2500);
+}
+
+// ── GAS POST ──
+async function gasPost(body) {
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+}
+
+// ── GAS GET ──
+async function gasGet(action) {
+  const res = await fetch(`${GAS_URL}?action=${action}`, { mode: "cors" });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || "エラー");
+  return json.data;
+}
+
+// ── 売上送信 ──
+async function submitSale() {
+  const date     = document.getElementById("s-date").value;
+  const timeSlot = document.getElementById("s-slot").value;
+  const drinkName= document.getElementById("s-drink").value;
+  const price    = document.getElementById("s-price").value;
+  const cups     = document.getElementById("s-cups").value;
+  const memo     = document.getElementById("s-memo").value;
+
+  if (!date || !price || !cups) { showToast("日付・単価・杯数を入力してください", "error"); return; }
+
+  const btn = document.querySelector("#page-sales .btn-primary");
+  btn.disabled = true; btn.textContent = "送信中...";
+
+  try {
+    await gasPost({ action: "addSale", date, timeSlot, drinkName, price, cups, memo });
+    showToast(`${drinkName} ${cups}杯 を記録しました ✓`, "success");
+    document.getElementById("s-cups").value = "1";
+    document.getElementById("s-memo").value = "";
+  } catch(e) {
+    showToast("送信に失敗しました", "error");
+  } finally {
+    btn.disabled = false; btn.textContent = "売上を記録する";
+  }
+}
+
+// ── 仕入れ送信 ──
+async function submitCost() {
+  const date   = document.getElementById("c-date").value;
+  const item   = document.getElementById("c-item").value.trim();
+  const cat    = document.getElementById("c-cat").value;
+  const amount = document.getElementById("c-amount").value;
+
+  if (!date || !item || !amount) { showToast("日付・品目・金額を入力してください", "error"); return; }
+
+  const btn = document.querySelector("#page-cost .btn-primary");
+  btn.disabled = true; btn.textContent = "送信中...";
+
+  try {
+    await gasPost({ action: "addCost", date, item, category: cat, amount });
+    showToast(`${item} ¥${Number(amount).toLocaleString()} を記録しました ✓`, "success");
+    document.getElementById("c-item").value = "";
+    document.getElementById("c-amount").value = "";
+    loadCostList();
+  } catch(e) {
+    showToast("送信に失敗しました", "error");
+  } finally {
+    btn.disabled = false; btn.textContent = "仕入れを記録する";
+  }
+}
+
+// ── レポート読み込み ──
+async function loadReport() {
+  const el = document.getElementById("report-content");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+  try {
+    const d = await gasGet("summary");
+    const maxCups = d.drinkRanking.length > 0 ? Math.max(...d.drinkRanking.map(x => x.cups)) : 1;
+
+    const drinkRows = d.drinkRanking.length === 0
+      ? '<div class="empty">データがありません</div>'
+      : d.drinkRanking.map(r => `
+          <div class="bar-row">
+            <span class="bar-name">${r.name}</span>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(r.cups/maxCups*100)}%"></div></div>
+            <span class="bar-count">${r.cups}杯</span>
+          </div>`).join("");
+
+    const dayRows = d.salesByDay.length === 0
+      ? '<div class="empty">データがありません</div>'
+      : d.salesByDay.map(r => `
+          <div class="list-row">
+            <div class="list-main">${r.date}</div>
+            <div class="list-val">¥${Number(r.total).toLocaleString()}</div>
+          </div>`).join("");
+
+    el.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">売上合計</div><div class="stat-val accent">¥${Number(d.totalSales).toLocaleString()}</div></div>
+        <div class="stat-card"><div class="stat-label">営業回数</div><div class="stat-val">${d.operationDays}<span style="font-size:14px;color:var(--text2)">回</span></div></div>
+        <div class="stat-card"><div class="stat-label">粗利益</div><div class="stat-val green">¥${Number(d.grossProfit).toLocaleString()}</div></div>
+        <div class="stat-card"><div class="stat-label">原価率</div><div class="stat-val">${d.costRate}<span style="font-size:14px;color:var(--text2)">%</span></div></div>
+      </div>
+      <div class="section">
+        <div class="section-title">ドリンク別 販売数</div>
+        ${drinkRows}
+      </div>
+      <div class="section">
+        <div class="section-title">回別売上</div>
+        ${dayRows}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div class="empty">データの取得に失敗しました<br><small>${e.message}</small></div>`;
+  }
+}
+
+// ── 仕入れリスト読み込み ──
+async function loadCostList() {
+  const el = document.getElementById("cost-list");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+  try {
+    const data = await gasGet("cost");
+    const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const monthly = data.filter(r => String(r["日付"]).startsWith(thisMonth));
+
+    if (monthly.length === 0) {
+      el.innerHTML = '<div class="empty">今月の仕入れ記録はありません</div>'; return;
+    }
+    const total = monthly.reduce((s, r) => s + Number(r["金額"]||0), 0);
+    el.innerHTML = monthly.map(r => `
+      <div class="list-row">
+        <div>
+          <div class="list-main">${r["品目"]}</div>
+          <div class="list-sub">${r["カテゴリ"]} · ${r["日付"]}</div>
+        </div>
+        <div class="list-val red">¥${Number(r["金額"]).toLocaleString()}</div>
+      </div>`).join("") +
+      `<div style="padding-top:10px;display:flex;justify-content:space-between;font-size:13px;color:var(--text2);border-top:1px solid var(--border);margin-top:4px">
+        <span>合計</span><span style="font-family:var(--mono);color:var(--text)">¥${total.toLocaleString()}</span>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div class="empty">取得に失敗しました</div>`;
+  }
+}
+
+// ── 収支読み込み ──
+async function loadPL() {
+  const el = document.getElementById("pl-content");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+  try {
+    const d = await gasGet("summary");
+    const avgPerDay = d.operationDays > 0 ? Math.round(d.totalSales / d.operationDays) : 0;
+
+    el.innerHTML = `
+      <div class="section">
+        <div class="section-title">${d.month} 収支</div>
+        <div class="pl-row"><span class="pl-label">売上合計</span><span class="pl-val" style="color:var(--accent)">¥${Number(d.totalSales).toLocaleString()}</span></div>
+        <div class="pl-row"><span class="pl-label">仕入れ・原価</span><span class="pl-val" style="color:var(--red)">− ¥${Number(d.totalCosts).toLocaleString()}</span></div>
+        <div class="pl-row total"><span class="pl-label" style="color:var(--text)">粗利益</span><span class="pl-val" style="color:var(--green)">¥${Number(d.grossProfit).toLocaleString()}</span></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">原価率</div><div class="stat-val">${d.costRate}<span style="font-size:13px;color:var(--text2)">%</span></div></div>
+        <div class="stat-card"><div class="stat-label">1回平均売上</div><div class="stat-val" style="font-size:17px">¥${avgPerDay.toLocaleString()}</div></div>
+      </div>
+      <div class="section">
+        <div class="section-title">回別売上</div>
+        ${d.salesByDay.length === 0
+          ? '<div class="empty">データがありません</div>'
+          : d.salesByDay.map(r => `
+            <div class="pl-row">
+              <span class="pl-label">${r.date}</span>
+              <span class="pl-val">¥${Number(r.total).toLocaleString()}</span>
+            </div>`).join("")}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div class="empty">取得に失敗しました<br><small>${e.message}</small></div>`;
+  }
+}
+</script>
+</body>
+</html>
