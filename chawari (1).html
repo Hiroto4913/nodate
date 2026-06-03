@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>茶割 POS</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a; --bg2: #141414; --bg3: #1e1e1e; --bg4: #252525;
+  --border: #2a2a2a; --border2: #383838;
+  --text: #f0ede8; --text2: #888; --text3: #444;
+  --accent: #c8a96e; --green: #5a9e7a; --red: #c06060; --blue: #5a82b4;
+  --font: 'Noto Sans JP', sans-serif; --mono: 'DM Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); overflow: hidden; }
+.app { display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; }
+
+/* Header */
+.header { padding: 12px 16px 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.header-title { font-size: 16px; font-weight: 900; color: var(--accent); letter-spacing: 0.06em; }
+.header-date { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 1px; }
+.nav-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border2); background: none; color: var(--text2); font-size: 12px; font-family: var(--font); cursor: pointer; transition: all 0.15s; }
+.nav-tab.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
+
+/* Cart bar */
+.cart-bar { padding: 10px 16px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.cart-total-val { font-size: 22px; font-weight: 900; color: var(--accent); font-family: var(--mono); }
+.cart-count { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+.cart-total-label { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+.send-btn { padding: 10px 20px; background: var(--accent); color: #111; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.send-btn:active { transform: scale(0.96); }
+.send-btn:disabled { background: var(--bg4); color: var(--text3); cursor: default; transform: none; }
+
+/* Pending bar */
+.pending-bar { flex-shrink: 0; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.pending-bar-inner { display: flex; gap: 8px; padding: 8px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.pending-bar-inner::-webkit-scrollbar { display: none; }
+.pending-chip { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 12px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; cursor: pointer; transition: border-color 0.15s; min-width: 64px; }
+.pending-chip:active { border-color: var(--accent); }
+.pending-chip-label { font-size: 13px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+.pending-chip-memo  { font-size: 10px; color: var(--text2); max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pending-chip-amt   { font-size: 11px; color: var(--accent); font-family: var(--mono); }
+.pending-bar-empty  { padding: 8px 16px; font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+/* Content */
+.content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* Menu grid */
+.menu-section-title { font-size: 10px; letter-spacing: 0.12em; color: var(--text3); font-family: var(--mono); margin: 4px 0 8px; }
+.menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+.menu-btn { position: relative; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: border-color 0.1s, background 0.1s, transform 0.08s; min-height: 72px; justify-content: center; }
+.menu-btn:active { transform: scale(0.96); background: var(--bg3); }
+.menu-btn.in-cart { border-color: var(--accent); background: rgba(200,169,110,0.08); }
+.menu-name  { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.menu-price { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+.menu-stock { font-size: 10px; padding: 1px 5px; border-radius: 3px; align-self: flex-start; margin-top: 2px; }
+.menu-stock.my   { background: rgba(90,158,122,0.15); color: var(--green); }
+.menu-stock.shop { background: rgba(90,130,180,0.15); color: var(--blue); }
+.cart-badge { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #111; font-size: 12px; font-weight: 900; font-family: var(--mono); display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+
+/* Other */
+.other-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+.other-title { font-size: 11px; color: var(--text2); letter-spacing: 0.08em; margin-bottom: 10px; font-family: var(--mono); }
+.other-row { display: flex; gap: 8px; align-items: center; }
+.other-input { flex: 1; height: 44px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 0 12px; font-size: 16px; font-family: var(--mono); outline: none; -webkit-appearance: none; }
+.other-input:focus { border-color: var(--accent); }
+.other-stock-btn { height: 44px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); font-size: 12px; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+.other-stock-btn.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
+.other-add-btn { height: 44px; width: 44px; border-radius: 8px; border: none; background: var(--bg4); color: var(--text2); font-size: 22px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.other-add-btn.ready { background: var(--accent); color: #111; }
+
+/* Cart page */
+.cart-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+.cart-section-hd { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text2); letter-spacing: 0.08em; font-family: var(--mono); }
+.cart-item { display: flex; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border); gap: 10px; }
+.cart-item:last-child { border-bottom: none; }
+.cart-item-name { flex: 1; font-size: 14px; color: var(--text); }
+.cart-item-stock { font-size: 10px; padding: 1px 5px; border-radius: 3px; }
+.cart-item-stock.my   { background: rgba(90,158,122,0.15); color: var(--green); }
+.cart-item-stock.shop { background: rgba(90,130,180,0.15); color: var(--blue); }
+.qty-ctrl { display: flex; align-items: center; gap: 8px; }
+.qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border2); background: var(--bg3); color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.qty-num { font-size: 15px; font-family: var(--mono); min-width: 20px; text-align: center; }
+.cart-item-sub { font-size: 14px; font-family: var(--mono); color: var(--text); min-width: 72px; text-align: right; }
+
+/* PL block */
+.pl-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.pl-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.pl-row:last-child { border-bottom: none; }
+.pl-label { color: var(--text2); }
+.pl-val { font-family: var(--mono); }
+.pl-row.total { font-size: 16px; font-weight: 700; padding-top: 10px; }
+
+/* Memo / inputs */
+.memo-field { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.memo-label { font-size: 11px; color: var(--text2); letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--mono); }
+.memo-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 14px; font-family: var(--font); outline: none; -webkit-appearance: none; }
+.memo-input:focus { border-color: var(--accent); }
+
+/* Buttons */
+.btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.submit-full { flex: 1; padding: 15px; background: var(--accent); color: #111; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.submit-full:active { transform: scale(0.98); opacity: 0.85; }
+.submit-full:disabled { background: var(--bg4); color: var(--text3); cursor: default; }
+.hold-btn { flex: 1; padding: 15px; background: var(--bg3); color: var(--accent); border: 1px solid var(--accent); border-radius: 10px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.hold-btn:active { transform: scale(0.98); opacity: 0.85; }
+.hold-btn:disabled { border-color: var(--border2); color: var(--text3); cursor: default; }
+.clear-btn { width: 100%; padding: 12px; background: none; border: 1px solid var(--border2); border-radius: 10px; color: var(--text3); font-size: 13px; font-family: var(--font); cursor: pointer; margin-bottom: 8px; }
+
+/* Pending detail modal */
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; }
+.modal-backdrop.hidden { display: none; }
+.modal { background: var(--bg2); border-radius: 16px 16px 0 0; border-top: 1px solid var(--border2); max-height: 85vh; display: flex; flex-direction: column; }
+.modal-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.modal-close { width: 32px; height: 32px; background: var(--bg3); border: none; border-radius: 50%; color: var(--text2); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-body { flex: 1; overflow-y: auto; padding: 12px 16px; }
+.modal-footer { padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
+
+/* Toast */
+.toast { position: absolute; top: 16px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 20px; font-size: 13px; color: var(--text); z-index: 100; transition: transform 0.25s ease; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error   { border-color: var(--red);   color: var(--red); }
+
+.empty { text-align: center; padding: 40px 16px; color: var(--text3); font-size: 13px; line-height: 2; }
+</style>
+</head>
+<body>
+<div class="app" style="position:relative;">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-title">茶割 POS</div>
+      <div class="header-date" id="hdr-date"></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="nav-tab active" onclick="showPage('menu',this)">メニュー</button>
+      <button class="nav-tab" onclick="showPage('cart',this)">カート</button>
+    </div>
+  </div>
+
+  <!-- Cart bar -->
+  <div class="cart-bar">
+    <div>
+      <div class="cart-total-label">カート合計</div>
+      <div class="cart-total-val" id="bar-total">¥0</div>
+      <div class="cart-count" id="bar-count">0品</div>
+    </div>
+    <button class="send-btn" id="bar-send-btn" onclick="showPage('cart',document.querySelectorAll('.nav-tab')[1])" disabled>確認 →</button>
+  </div>
+
+  <!-- Pending bar -->
+  <div class="pending-bar" id="pending-bar"></div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Menu -->
+    <div id="page-menu" class="page active">
+      <div class="menu-section-title">お茶割り・おつまみ</div>
+      <div class="menu-grid" id="grid-my"></div>
+      <div class="menu-section-title">お店の在庫</div>
+      <div class="menu-grid" id="grid-shop"></div>
+      <div class="other-card">
+        <div class="other-title">その他（金額入力）</div>
+        <div class="other-row">
+          <input class="other-input" type="number" id="other-amount" placeholder="金額" min="0">
+          <button class="other-stock-btn active" id="ost-my"   onclick="setOtherStock('自在庫')">自在庫</button>
+          <button class="other-stock-btn"        id="ost-shop" onclick="setOtherStock('店舗在庫')">店舗</button>
+          <button class="other-add-btn" id="other-add-btn" onclick="addOther()">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart -->
+    <div id="page-cart" class="page">
+      <div id="cart-content"></div>
+    </div>
+
+  </div>
+
+  <!-- Pending detail modal -->
+  <div class="modal-backdrop hidden" id="modal-backdrop" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">—</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const GAS_URL   = "https://script.google.com/macros/s/AKfycbw6Kn_R_WdbV3F4teZEm7gmclg07NZ-dJhxGYpKENaG3K-Kw53xf39vL9pfiMcP5YPF/exec";
+const BASHO_DAI = 3000;
+const LABELS    = ["A","B","C","D","E","F"];
+
+const MENU = [
+  { name:"緑茶割り",    price:500,  stock:"自在庫" },
+  { name:"ほうじ茶割",  price:500,  stock:"自在庫" },
+  { name:"小鉢",        price:300,  stock:"自在庫" },
+  { name:"小鉢4種盛り", price:1000, stock:"自在庫" },
+  { name:"スペシャル",  price:500,  stock:"自在庫" },
+  { name:"ワイン",      price:1100, stock:"店舗在庫" },
+  { name:"ドラフトビール", price:1000, stock:"店舗在庫" },
+  { name:"缶ビール",    price:1100, stock:"店舗在庫" },
+];
+
+// cart: 現在入力中、pendingOrders: 保留中 [{label, memo, items:[{id,name,price,stock,qty}]}]
+let cart = [];
+let pendingOrders = [];
+let otherStock    = "自在庫";
+let currentPage   = "menu";
+let activePending = null; // モーダル表示中の保留index
+
+// ── 日付 ──
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function todayLabel() {
+  const d = new Date();
+  const dow = ["日","月","火","水","木","金","土"][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${dow}）`;
+}
+function currentSlot() {
+  const h = new Date().getHours();
+  if (h < 19) return "18:00〜19:00";
+  if (h < 20) return "19:00〜20:00";
+  if (h < 21) return "20:00〜21:00";
+  if (h < 22) return "21:00〜22:00";
+  if (h < 23) return "22:00〜23:00";
+  return "23:00〜閉店";
+}
+document.getElementById("hdr-date").textContent = todayLabel();
+
+// ── 次の保留ラベル ──
+function nextLabel() {
+  const used = pendingOrders.map(p => p.label);
+  return LABELS.find(l => !used.includes(l)) || "Z";
+}
+
+// ── メニューグリッド ──
+function renderMenuGrid() {
+  ["my","shop"].forEach(type => {
+    const items = MENU.filter(m => (type === "my" ? m.stock === "自在庫" : m.stock === "店舗在庫"));
+    document.getElementById(`grid-${type}`).innerHTML = items.map(m => {
+      const cartItem = cart.find(c => c.name === m.name && c.stock === m.stock);
+      const qty = cartItem ? cartItem.qty : 0;
+      return `<button class="menu-btn ${qty > 0 ? "in-cart" : ""}" onclick="addToCart('${m.name}',${m.price},'${m.stock}')">
+        ${qty > 0 ? `<div class="cart-badge">${qty}</div>` : ""}
+        <div class="menu-name">${m.name}</div>
+        <div class="menu-price">¥${m.price.toLocaleString()}</div>
+        <div class="menu-stock ${type}">${m.stock}</div>
+      </button>`;
+    }).join("");
+  });
+}
+
+// ── 保留バー ──
+function renderPendingBar() {
+  const bar = document.getElementById("pending-bar");
+  if (pendingOrders.length === 0) {
+    bar.innerHTML = '<div class="pending-bar-empty">保留なし</div>';
+    return;
+  }
+  bar.innerHTML = `<div class="pending-bar-inner">` +
+    pendingOrders.map((p, i) => {
+      const total = p.items.reduce((s, c) => s + c.price * c.qty, 0);
+      return `<div class="pending-chip" onclick="openPendingModal(${i})">
+        <div class="pending-chip-label">${p.label}</div>
+        ${p.memo ? `<div class="pending-chip-memo">${p.memo}</div>` : ""}
+        <div class="pending-chip-amt">¥${total.toLocaleString()}</div>
+      </div>`;
+    }).join("") +
+  `</div>`;
+}
+
+// ── カート追加（通常メニュー） ──
+function addToCart(name, price, stock) {
+  const existing = cart.find(c => c.name === name && c.stock === stock);
+  if (existing) { existing.qty++; } else { cart.push({ id: Date.now(), name, price, stock, qty: 1 }); }
+  updateCartBar();
+  renderMenuGrid();
+  navigator.vibrate && navigator.vibrate(30);
+}
+
+// ── カート追加（保留伝票への追加） ──
+function addToPending(idx, name, price, stock) {
+  const order = pendingOrders[idx];
+  const existing = order.items.find(c => c.name === name && c.stock === stock);
+  if (existing) { existing.qty++; } else { order.items.push({ id: Date.now(), name, price, stock, qty: 1 }); }
+  renderPendingBar();
+  renderPendingModal(idx);
+  navigator.vibrate && navigator.vibrate(30);
+}
+
+// ── その他 ──
+function setOtherStock(type) {
+  otherStock = type;
+  document.getElementById("ost-my").classList.toggle("active", type === "自在庫");
+  document.getElementById("ost-shop").classList.toggle("active", type === "店舗在庫");
+}
+function addOther() {
+  const val = Number(document.getElementById("other-amount").value);
+  if (!val || val <= 0) return;
+  cart.push({ id: Date.now(), name: "その他", price: val, stock: otherStock, qty: 1 });
+  document.getElementById("other-amount").value = "";
+  document.getElementById("other-add-btn").classList.remove("ready");
+  updateCartBar();
+  renderMenuGrid();
+  showToast(`¥${val.toLocaleString()} を追加しました`, "success");
+}
+
+// ── カートバー ──
+function updateCartBar() {
+  const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  const count = cart.reduce((s, c) => s + c.qty, 0);
+  document.getElementById("bar-total").textContent = `¥${total.toLocaleString()}`;
+  document.getElementById("bar-count").textContent = `${count}品`;
+  document.getElementById("bar-send-btn").disabled = cart.length === 0;
+  if (currentPage === "cart") renderCartPage();
+}
+
+// ── 数量変更（カート） ──
+function changeQty(id, delta) {
+  const idx = cart.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  updateCartBar();
+  renderMenuGrid();
+}
+
+// ── 数量変更（保留） ──
+function changePendingQty(orderIdx, itemId, delta) {
+  const order = pendingOrders[orderIdx];
+  const idx   = order.items.findIndex(c => c.id === itemId);
+  if (idx === -1) return;
+  order.items[idx].qty += delta;
+  if (order.items[idx].qty <= 0) order.items.splice(idx, 1);
+  renderPendingBar();
+  renderPendingModal(orderIdx);
+}
+
+// ── カートページ ──
+function renderCartPage() {
+  const el = document.getElementById("cart-content");
+  if (cart.length === 0) {
+    el.innerHTML = '<div class="empty">カートは空です<br>メニューから追加してください</div>';
+    return;
+  }
+  const myItems    = cart.filter(c => c.stock !== "店舗在庫");
+  const shopItems  = cart.filter(c => c.stock === "店舗在庫");
+  const totalSales = cart.reduce((s,c) => s + c.price * c.qty, 0);
+  const myTotal    = myItems.reduce((s,c) => s + c.price * c.qty, 0);
+  const shopTotal  = shopItems.reduce((s,c) => s + c.price * c.qty, 0);
+  const myShare    = myTotal - BASHO_DAI;
+
+  function itemRows(items) {
+    let html = "";
+    items.forEach(c => {
+      const sc = c.stock === "店舗在庫" ? "shop" : "my";
+      html += '<div class="cart-item">'
+        + '<div style="flex:1"><div class="cart-item-name">' + c.name + '</div>'
+        + '<span class="cart-item-stock ' + sc + '">' + c.stock + '</span></div>'
+        + '<div class="qty-ctrl">'
+        + '<button class="qty-btn" onclick="changeQty(' + c.id + ',-1)">−</button>'
+        + '<span class="qty-num">' + c.qty + '</span>'
+        + '<button class="qty-btn" onclick="changeQty(' + c.id + ',+1)">＋</button>'
+        + '</div>'
+        + '<div class="cart-item-sub">¥' + (c.price * c.qty).toLocaleString() + '</div>'
+        + '</div>';
+    });
+    return html;
+  }
+
+  let out = "";
+  if (myItems.length > 0)
+    out += '<div class="cart-section"><div class="cart-section-hd">自在庫</div>' + itemRows(myItems) + '</div>';
+  if (shopItems.length > 0)
+    out += '<div class="cart-section"><div class="cart-section-hd">店舗在庫</div>' + itemRows(shopItems) + '</div>';
+
+  out += '<div class="pl-block">'
+    + '<div class="pl-row"><span class="pl-label">売上合計</span><span class="pl-val">¥' + totalSales.toLocaleString() + '</span></div>'
+    + '<div class="pl-row"><span class="pl-label">自在庫売上</span><span class="pl-val" style="color:var(--green)">¥' + myTotal.toLocaleString() + '</span></div>'
+    + (shopTotal > 0 ? '<div class="pl-row"><span class="pl-label">店舗在庫売上</span><span class="pl-val" style="color:var(--blue)">¥' + shopTotal.toLocaleString() + '</span></div>' : "")
+    + '<div class="pl-row"><span class="pl-label">場所代</span><span class="pl-val" style="color:var(--red)">− ¥' + BASHO_DAI.toLocaleString() + '</span></div>'
+    + '<div class="pl-row total"><span class="pl-label" style="color:var(--text)">手取り</span>'
+    + '<span class="pl-val" style="color:' + (myShare >= 0 ? 'var(--accent)' : 'var(--red)') + '">¥' + myShare.toLocaleString() + '</span></div>'
+    + '</div>';
+
+  out += '<div class="memo-field"><div class="memo-label">MEMO（任意）</div>'
+    + '<input class="memo-input" type="text" id="cart-memo" placeholder="天気・客数など"></div>';
+
+  out += '<div class="btn-row">'
+    + '<button class="hold-btn" onclick="holdCart()">保留</button>'
+    + '<button class="submit-full" onclick="submitCart()">精算・送信</button>'
+    + '</div>'
+    + '<button class="clear-btn" onclick="clearCart()">カートをリセット</button>';
+
+  el.innerHTML = out;
+}
+
+// ── 保留 ──
+function holdCart() {
+  if (cart.length === 0) return;
+  const label = nextLabel();
+  const memo  = document.getElementById("cart-memo")?.value || "";
+  pendingOrders.push({ label, memo, items: [...cart] });
+  cart = [];
+  updateCartBar();
+  renderMenuGrid();
+  renderPendingBar();
+  showToast(`${label} として保留しました`, "success");
+  showPage("menu", document.querySelectorAll(".nav-tab")[0]);
+}
+
+// ── 精算（カートから直接） ──
+async function submitCart() {
+  if (cart.length === 0) return;
+  const memo = document.getElementById("cart-memo")?.value || "";
+  await sendItems(cart, memo);
+  cart = [];
+  updateCartBar();
+  renderMenuGrid();
+  showPage("menu", document.querySelectorAll(".nav-tab")[0]);
+}
+
+// ── 保留モーダル ──
+function openPendingModal(idx) {
+  activePending = idx;
+  renderPendingModal(idx);
+  document.getElementById("modal-backdrop").classList.remove("hidden");
+}
+function closeModal(e) {
+  if (e && e.target !== document.getElementById("modal-backdrop")) return;
+  document.getElementById("modal-backdrop").classList.add("hidden");
+  activePending = null;
+}
+
+function renderPendingModal(idx) {
+  const order = pendingOrders[idx];
+  if (!order) return;
+
+  const total   = order.items.reduce((s,c) => s + c.price * c.qty, 0);
+  const myItems = order.items.filter(c => c.stock !== "店舗在庫");
+  const myTotal = myItems.reduce((s,c) => s + c.price * c.qty, 0);
+  const myShare = myTotal - BASHO_DAI;
+
+  document.getElementById("modal-title").textContent =
+    order.label + (order.memo ? " ／ " + order.memo : "");
+
+  // 品目一覧
+  let itemHtml = "";
+  order.items.forEach(c => {
+    const stockClass = c.stock === "店舗在庫" ? "shop" : "my";
+    itemHtml += '<div class="cart-item">'
+      + '<div style="flex:1"><div class="cart-item-name">' + c.name + '</div>'
+      + '<span class="cart-item-stock ' + stockClass + '">' + c.stock + '</span></div>'
+      + '<div class="qty-ctrl">'
+      + '<button class="qty-btn" onclick="changePendingQty(' + idx + ',' + c.id + ',-1)">−</button>'
+      + '<span class="qty-num">' + c.qty + '</span>'
+      + '<button class="qty-btn" onclick="changePendingQty(' + idx + ',' + c.id + ',+1)">＋</button>'
+      + '</div>'
+      + '<div class="cart-item-sub">¥' + (c.price * c.qty).toLocaleString() + '</div>'
+      + '</div>';
+  });
+
+  // 追加注文ボタン
+  let addBtns = "";
+  MENU.forEach(m => {
+    addBtns += '<button style="padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);'
+      + 'border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);cursor:pointer;"'
+      + ' onclick="addToPending(' + idx + ',\'' + m.name + '\',' + m.price + ',\'' + m.stock + '\')">'
+      + m.name + '<br><span style="font-size:11px;color:var(--text2);font-family:var(--mono)">¥'
+      + m.price.toLocaleString() + '</span></button>';
+  });
+
+  // PL
+  let plHtml = '<div class="pl-block" style="margin-bottom:12px;">'
+    + '<div class="pl-row"><span class="pl-label">合計</span><span class="pl-val">¥' + total.toLocaleString() + '</span></div>'
+    + '<div class="pl-row"><span class="pl-label">自在庫売上</span><span class="pl-val" style="color:var(--green)">¥' + myTotal.toLocaleString() + '</span></div>'
+    + '<div class="pl-row"><span class="pl-label">場所代</span><span class="pl-val" style="color:var(--red)">− ¥' + BASHO_DAI.toLocaleString() + '</span></div>'
+    + '<div class="pl-row total"><span class="pl-label" style="color:var(--text)">手取り</span>'
+    + '<span class="pl-val" style="color:' + (myShare >= 0 ? 'var(--accent)' : 'var(--red)') + '">¥' + myShare.toLocaleString() + '</span></div>'
+    + '</div>';
+
+  // その他入力
+  const otherId  = "modal-other-amount-" + idx;
+  const myBtnId  = "modal-ost-my-" + idx;
+  const shBtnId  = "modal-ost-shop-" + idx;
+  const addBtnId = "modal-other-add-" + idx;
+  const otherHtml = '<div style="font-size:11px;color:var(--text3);letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px;">その他（金額入力）</div>'
+    + '<div style="display:flex;gap:8px;margin-bottom:4px;">'
+    + '<input class="other-input" type="number" id="' + otherId + '" placeholder="金額" min="0" style="flex:1;">'
+    + '<button class="other-stock-btn active" id="' + myBtnId + '" onclick="setModalOtherStock(' + idx + ',\'自在庫\')">自在庫</button>'
+    + '<button class="other-stock-btn" id="' + shBtnId + '" onclick="setModalOtherStock(' + idx + ',\'店舗在庫\')">店舗</button>'
+    + '<button class="other-add-btn" id="' + addBtnId + '" onclick="addOtherToPending(' + idx + ')">＋</button>'
+    + '</div>';
+
+  document.getElementById("modal-body").innerHTML =
+    '<div style="margin-bottom:12px;">' + itemHtml + '</div>'
+    + plHtml
+    + '<div style="font-size:11px;color:var(--text3);letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px;">追加注文</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;">' + addBtns + '</div>'
+    + otherHtml;
+
+  document.getElementById("modal-footer").innerHTML =
+    '<div class="btn-row">'
+    + '<button class="hold-btn" style="color:var(--red);border-color:var(--red);" onclick="deletePending(' + idx + ')">削除</button>'
+    + '<button class="submit-full" onclick="settlePending(' + idx + ')">精算・送信</button>'
+    + '</div>';
+}
+
+// ── モーダル内その他の在庫区分 ──
+function setModalOtherStock(idx, type) {
+  document.getElementById(`modal-ost-my-${idx}`).classList.toggle("active", type === "自在庫");
+  document.getElementById(`modal-ost-shop-${idx}`).classList.toggle("active", type === "店舗在庫");
+}
+function addOtherToPending(idx) {
+  const amtEl = document.getElementById(`modal-other-amount-${idx}`);
+  const val   = Number(amtEl.value);
+  if (!val || val <= 0) return;
+  const myBtn   = document.getElementById(`modal-ost-my-${idx}`);
+  const stock   = myBtn.classList.contains("active") ? "自在庫" : "店舗在庫";
+  addToPending(idx, "その他", val, stock);
+  amtEl.value = "";
+  document.getElementById(`modal-other-add-${idx}`).classList.remove("ready");
+  showToast(`¥${val.toLocaleString()} を追加しました`, "success");
+}
+
+// ── 保留精算 ──
+async function settlePending(idx) {
+  const order = pendingOrders[idx];
+  if (!order || order.items.length === 0) return;
+  await sendItems(order.items, order.memo || "");
+  pendingOrders.splice(idx, 1);
+  renderPendingBar();
+  document.getElementById("modal-backdrop").classList.add("hidden");
+  activePending = null;
+}
+
+// ── 保留削除 ──
+function deletePending(idx) {
+  if (!confirm("この保留伝票を削除しますか？")) return;
+  pendingOrders.splice(idx, 1);
+  renderPendingBar();
+  document.getElementById("modal-backdrop").classList.add("hidden");
+  activePending = null;
+  showToast("保留を削除しました", "");
+}
+
+// ── GAS送信 ──
+async function sendItems(items, memo) {
+  const date = todayStr();
+  const slot = currentSlot();
+  const btn  = document.querySelector(".submit-full");
+  if (btn) { btn.disabled = true; btn.textContent = "送信中..."; }
+
+  try {
+    for (const item of items) {
+      await fetch(GAS_URL, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action:"addSale", date, timeSlot:slot, drinkName:item.name, price:item.price, cups:item.qty, stockType:item.stock, memo })
+      });
+    }
+    const total = items.reduce((s,c) => s + c.price * c.qty, 0);
+    showToast(`¥${total.toLocaleString()} を送信しました ✓`, "success");
+  } catch(e) {
+    showToast("送信に失敗しました", "error");
+    if (btn) { btn.disabled = false; btn.textContent = "精算・送信"; }
+  }
+}
+
+// ── カートリセット ──
+function clearCart() {
+  cart = [];
+  updateCartBar();
+  renderMenuGrid();
+}
+
+// ── ページ切替 ──
+function showPage(name, btn) {
+  currentPage = name;
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
+  document.getElementById("page-" + name).classList.add("active");
+  btn.classList.add("active");
+  if (name === "cart") renderCartPage();
+}
+
+// ── Toast ──
+function showToast(msg, type = "") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(() => t.className = "toast", 2500);
+}
+
+// ── その他ボタン ──
+document.getElementById("other-amount").addEventListener("input", function() {
+  document.getElementById("other-add-btn").classList.toggle("ready", Number(this.value) > 0);
+});
+
+// ── 初期描画 ──
+renderMenuGrid();
+renderPendingBar();
+</script>
+</body>
+</html>
