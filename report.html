@@ -231,6 +231,8 @@ function selectDate(dateStr) {
 }
 
 // ── 詳細描画 ──
+const BASHO_DAI = 3000;
+
 function renderDetail(dateStr) {
   const rows = allSales.filter(r => String(r["日付"]||"").slice(0,10) === dateStr);
   if (rows.length === 0) {
@@ -242,13 +244,17 @@ function renderDetail(dateStr) {
   const itemMap = {};
   rows.forEach(r => {
     const name = r["ドリンク名"] || r["品目"] || "不明";
-    if (!itemMap[name]) itemMap[name] = { cups: 0, subtotal: 0, price: Number(r["単価"]||0), slots: new Set() };
+    if (!itemMap[name]) itemMap[name] = { cups: 0, subtotal: 0, price: Number(r["単価"]||0), slots: new Set(), stock: r["在庫区分"] || "自在庫" };
     itemMap[name].cups     += Number(r["杯数"]||0);
     itemMap[name].subtotal += Number(r["小計"]||0);
     if (r["時間帯"]) itemMap[name].slots.add(r["時間帯"]);
   });
 
-  const total = Object.values(itemMap).reduce((s, v) => s + v.subtotal, 0);
+  const total      = Object.values(itemMap).reduce((s, v) => s + v.subtotal, 0);
+  const myStock    = Object.values(itemMap).filter(v => v.stock !== "店舗在庫").reduce((s, v) => s + v.subtotal, 0);
+  const shopStock  = Object.values(itemMap).filter(v => v.stock === "店舗在庫").reduce((s, v) => s + v.subtotal, 0);
+  const myShare    = myStock - BASHO_DAI;
+
   const [year, mon, day] = dateStr.split("-");
   const dow = ["日","月","火","水","木","金","土"][new Date(Number(year), Number(mon)-1, Number(day)).getDay()];
 
@@ -257,7 +263,11 @@ function renderDetail(dateStr) {
     .map(([name, v]) => `
       <div class="detail-row">
         <div>
-          <div class="detail-name">${name}</div>
+          <div class="detail-name">${name}
+            <span style="font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;
+              background:${v.stock === "店舗在庫" ? "rgba(90,130,180,0.15)" : "rgba(90,158,122,0.15)"};
+              color:${v.stock === "店舗在庫" ? "#7aa4d4" : "#5a9e7a"};">${v.stock}</span>
+          </div>
           <div class="detail-slot">${[...v.slots].join(" / ") || ""}</div>
         </div>
         <div class="detail-meta">${v.price > 0 ? `¥${v.price.toLocaleString()} × ${v.cups}` : `${v.cups}点`}</div>
@@ -271,6 +281,24 @@ function renderDetail(dateStr) {
         <span class="detail-total">¥${total.toLocaleString()}</span>
       </div>
       <div class="detail-body">${itemRows}</div>
+      <div style="border-top:1px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--text2)">自在庫売上</span>
+          <span style="font-family:var(--mono);color:var(--green)">¥${myStock.toLocaleString()}</span>
+        </div>
+        ${shopStock > 0 ? `<div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--text2)">店舗在庫売上</span>
+          <span style="font-family:var(--mono);color:#7aa4d4">¥${shopStock.toLocaleString()}</span>
+        </div>` : ""}
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <span style="color:var(--text2)">場所代</span>
+          <span style="font-family:var(--mono);color:var(--red)">− ¥${BASHO_DAI.toLocaleString()}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);padding-top:8px;margin-top:2px;">
+          <span style="color:var(--text)">手取り</span>
+          <span style="font-family:var(--mono);color:${myShare >= 0 ? "var(--accent)" : "var(--red)"}">¥${myShare.toLocaleString()}</span>
+        </div>
+      </div>
     </div>`;
 }
 
