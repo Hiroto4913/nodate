@@ -7,188 +7,249 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0a; --bg2: #141414; --bg3: #1e1e1e; --bg4: #252525;
-  --border: #2a2a2a; --border2: #383838;
-  --text: #f0ede8; --text2: #888; --text3: #444;
-  --accent: #c8a96e; --green: #5a9e7a; --red: #c06060; --blue: #5a82b4;
-  --font: 'Noto Sans JP', sans-serif; --mono: 'DM Mono', monospace;
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#252525;
+  --border:#2a2a2a;--border2:#383838;
+  --text:#f0ede8;--text2:#888;--text3:#444;
+  --accent:#c8a96e;--green:#5a9e7a;--red:#c06060;--blue:#5a82b4;
+  --font:'Noto Sans JP',sans-serif;--mono:'DM Mono',monospace;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); overflow: hidden; }
-.app { display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;}
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative;}
 
 /* Header */
-.header { padding: 12px 16px 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.header-title { font-size: 16px; font-weight: 900; color: var(--accent); letter-spacing: 0.06em; }
-.header-date { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 1px; }
-.nav-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border2); background: none; color: var(--text2); font-size: 12px; font-family: var(--font); cursor: pointer; transition: all 0.15s; }
-.nav-tab.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
+.header{padding:12px 16px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header-title{font-size:16px;font-weight:900;color:var(--accent);letter-spacing:.06em;}
+.header-date{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:1px;}
+
+/* Bottom nav */
+.bottom-nav{display:flex;border-top:1px solid var(--border);flex-shrink:0;background:var(--bg2);}
+.bnav-btn{flex:1;padding:10px 4px 12px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-family:var(--font);letter-spacing:.04em;transition:color .15s;position:relative;}
+.bnav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;}
+.bnav-btn.active{color:var(--accent);}
+.bnav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--red);color:#fff;font-size:9px;font-family:var(--mono);font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--bg2);}
 
 /* Cart bar */
-.cart-bar { padding: 10px 16px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.cart-total-val { font-size: 22px; font-weight: 900; color: var(--accent); font-family: var(--mono); }
-.cart-count { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
-.cart-total-label { font-size: 11px; color: var(--text2); font-family: var(--mono); }
-.send-btn { padding: 10px 20px; background: var(--accent); color: #111; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
-.send-btn:active { transform: scale(0.96); }
-.send-btn:disabled { background: var(--bg4); color: var(--text3); cursor: default; transform: none; }
+.cart-bar{padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cart-total-val{font-size:20px;font-weight:900;color:var(--accent);font-family:var(--mono);}
+.cart-count{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.cart-total-label{font-size:10px;color:var(--text2);font-family:var(--mono);}
+.confirm-btn{padding:9px 18px;background:var(--accent);color:#111;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:opacity .15s,transform .1s;}
+.confirm-btn:active{transform:scale(.96);}
+.confirm-btn:disabled{background:var(--bg4);color:var(--text3);cursor:default;transform:none;}
 
 /* Pending bar */
-.pending-bar { flex-shrink: 0; background: var(--bg2); border-bottom: 1px solid var(--border); }
-.pending-bar-inner { display: flex; gap: 8px; padding: 8px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-.pending-bar-inner::-webkit-scrollbar { display: none; }
-.pending-chip { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 12px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; cursor: pointer; transition: border-color 0.15s; min-width: 64px; }
-.pending-chip:active { border-color: var(--accent); }
-.pending-chip-label { font-size: 13px; font-weight: 700; color: var(--text); font-family: var(--mono); }
-.pending-chip-memo  { font-size: 10px; color: var(--text2); max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pending-chip-amt   { font-size: 11px; color: var(--accent); font-family: var(--mono); }
-.pending-bar-empty  { padding: 8px 16px; font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.pending-bar{flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);}
+.pending-bar-inner{display:flex;gap:8px;padding:8px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.pending-bar-inner::-webkit-scrollbar{display:none;}
+.pending-chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;min-width:60px;}
+.pending-chip:active{border-color:var(--accent);}
+.pc-label{font-size:13px;font-weight:700;color:var(--text);font-family:var(--mono);}
+.pc-memo{font-size:10px;color:var(--text2);max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pc-amt{font-size:11px;color:var(--accent);font-family:var(--mono);}
+.pending-bar-empty{padding:8px 16px;font-size:12px;color:var(--text3);font-family:var(--mono);}
 
 /* Content */
-.content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px; }
-.page { display: none; }
-.page.active { display: block; }
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;}
+.page{display:none;}
+.page.active{display:block;}
 
 /* Menu grid */
-.menu-section-title { font-size: 10px; letter-spacing: 0.12em; color: var(--text3); font-family: var(--mono); margin: 4px 0 8px; }
-.menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
-.menu-btn { position: relative; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: border-color 0.1s, background 0.1s, transform 0.08s; min-height: 72px; justify-content: center; }
-.menu-btn:active { transform: scale(0.96); background: var(--bg3); }
-.menu-btn.in-cart { border-color: var(--accent); background: rgba(200,169,110,0.08); }
-.menu-name  { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
-.menu-price { font-size: 12px; color: var(--text2); font-family: var(--mono); }
-.menu-stock { font-size: 10px; padding: 1px 5px; border-radius: 3px; align-self: flex-start; margin-top: 2px; }
-.menu-stock.my   { background: rgba(90,158,122,0.15); color: var(--green); }
-.menu-stock.shop { background: rgba(90,130,180,0.15); color: var(--blue); }
-.cart-badge { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #111; font-size: 12px; font-weight: 900; font-family: var(--mono); display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+.sec-title{font-size:10px;letter-spacing:.12em;color:var(--text3);font-family:var(--mono);margin:4px 0 8px;}
+.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
+.menu-btn{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 12px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;transition:border-color .1s,background .1s,transform .08s;min-height:72px;justify-content:center;}
+.menu-btn:active{transform:scale(.96);background:var(--bg3);}
+.menu-btn.in-cart{border-color:var(--accent);background:rgba(200,169,110,.08);}
+.mn{font-size:15px;font-weight:700;color:var(--text);line-height:1.2;}
+.mp{font-size:12px;color:var(--text2);font-family:var(--mono);}
+.ms{font-size:10px;padding:1px 5px;border-radius:3px;align-self:flex-start;margin-top:2px;}
+.ms.my{background:rgba(90,158,122,.15);color:var(--green);}
+.ms.shop{background:rgba(90,130,180,.15);color:var(--blue);}
+.cart-badge{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#111;font-size:12px;font-weight:900;font-family:var(--mono);display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
 
-/* Other */
-.other-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
-.other-title { font-size: 11px; color: var(--text2); letter-spacing: 0.08em; margin-bottom: 10px; font-family: var(--mono); }
-.other-row { display: flex; gap: 8px; align-items: center; }
-.other-input { flex: 1; height: 44px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 0 12px; font-size: 16px; font-family: var(--mono); outline: none; -webkit-appearance: none; }
-.other-input:focus { border-color: var(--accent); }
-.other-stock-btn { height: 44px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); font-size: 12px; font-family: var(--font); cursor: pointer; white-space: nowrap; }
-.other-stock-btn.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
-.other-add-btn { height: 44px; width: 44px; border-radius: 8px; border: none; background: var(--bg4); color: var(--text2); font-size: 22px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.other-add-btn.ready { background: var(--accent); color: #111; }
+/* Other input */
+.other-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
+.other-title{font-size:11px;color:var(--text2);letter-spacing:.08em;margin-bottom:10px;font-family:var(--mono);}
+.other-row{display:flex;gap:8px;align-items:center;}
+.oi{flex:1;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:0 12px;font-size:16px;font-family:var(--mono);outline:none;-webkit-appearance:none;}
+.oi:focus{border-color:var(--accent);}
+.osb{height:44px;padding:0 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-family:var(--font);cursor:pointer;white-space:nowrap;}
+.osb.active{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700;}
+.oab{height:44px;width:44px;border-radius:8px;border:none;background:var(--bg4);color:var(--text2);font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.oab.ready{background:var(--accent);color:#111;}
 
 /* Cart page */
-.cart-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
-.cart-section-hd { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text2); letter-spacing: 0.08em; font-family: var(--mono); }
-.cart-item { display: flex; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border); gap: 10px; }
-.cart-item:last-child { border-bottom: none; }
-.cart-item-name { flex: 1; font-size: 14px; color: var(--text); }
-.cart-item-stock { font-size: 10px; padding: 1px 5px; border-radius: 3px; }
-.cart-item-stock.my   { background: rgba(90,158,122,0.15); color: var(--green); }
-.cart-item-stock.shop { background: rgba(90,130,180,0.15); color: var(--blue); }
-.qty-ctrl { display: flex; align-items: center; gap: 8px; }
-.qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border2); background: var(--bg3); color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.qty-num { font-size: 15px; font-family: var(--mono); min-width: 20px; text-align: center; }
-.cart-item-sub { font-size: 14px; font-family: var(--mono); color: var(--text); min-width: 72px; text-align: right; }
+.cart-sec{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.cart-sec-hd{padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);letter-spacing:.08em;font-family:var(--mono);}
+.cart-item{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);gap:10px;}
+.cart-item:last-child{border-bottom:none;}
+.ci-name{flex:1;font-size:14px;color:var(--text);}
+.ci-stock{font-size:10px;padding:1px 5px;border-radius:3px;}
+.ci-stock.my{background:rgba(90,158,122,.15);color:var(--green);}
+.ci-stock.shop{background:rgba(90,130,180,.15);color:var(--blue);}
+.qty-ctrl{display:flex;align-items:center;gap:8px;}
+.qb{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.qn{font-size:15px;font-family:var(--mono);min-width:20px;text-align:center;}
+.ci-sub{font-size:14px;font-family:var(--mono);color:var(--text);min-width:72px;text-align:right;}
 
-/* PL block */
-.pl-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
-.pl-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); }
-.pl-row:last-child { border-bottom: none; }
-.pl-label { color: var(--text2); }
-.pl-val { font-family: var(--mono); }
-.pl-row.total { font-size: 16px; font-weight: 700; padding-top: 10px; }
+/* Summary block */
+.sum-block{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);}
+.sum-row:last-child{border-bottom:none;}
+.sum-label{color:var(--text2);}
+.sum-val{font-family:var(--mono);}
+.sum-row.total{font-size:16px;font-weight:700;padding-top:10px;}
 
-/* Memo / inputs */
-.memo-field { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
-.memo-label { font-size: 11px; color: var(--text2); letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--mono); }
-.memo-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 14px; font-family: var(--font); outline: none; -webkit-appearance: none; }
-.memo-input:focus { border-color: var(--accent); }
+/* Payment selector */
+.pay-block{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.pay-title{font-size:11px;color:var(--text2);letter-spacing:.08em;margin-bottom:10px;font-family:var(--mono);}
+.pay-btns{display:flex;gap:8px;}
+.pay-btn{flex:1;padding:10px 8px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:13px;font-family:var(--font);cursor:pointer;text-align:center;}
+.pay-btn.active{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700;}
+
+/* Memo */
+.memo-block{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.memo-label{font-size:11px;color:var(--text2);letter-spacing:.08em;margin-bottom:8px;font-family:var(--mono);}
+.memo-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:10px 12px;font-size:14px;font-family:var(--font);outline:none;-webkit-appearance:none;}
+.memo-input:focus{border-color:var(--accent);}
 
 /* Buttons */
-.btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
-.submit-full { flex: 1; padding: 15px; background: var(--accent); color: #111; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
-.submit-full:active { transform: scale(0.98); opacity: 0.85; }
-.submit-full:disabled { background: var(--bg4); color: var(--text3); cursor: default; }
-.hold-btn { flex: 1; padding: 15px; background: var(--bg3); color: var(--accent); border: 1px solid var(--accent); border-radius: 10px; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
-.hold-btn:active { transform: scale(0.98); opacity: 0.85; }
-.hold-btn:disabled { border-color: var(--border2); color: var(--text3); cursor: default; }
-.clear-btn { width: 100%; padding: 12px; background: none; border: 1px solid var(--border2); border-radius: 10px; color: var(--text3); font-size: 13px; font-family: var(--font); cursor: pointer; margin-bottom: 8px; }
+.btn-row{display:flex;gap:8px;margin-bottom:8px;}
+.btn-primary{flex:1;padding:14px;background:var(--accent);color:#111;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:opacity .15s,transform .1s;}
+.btn-primary:active{transform:scale(.98);opacity:.85;}
+.btn-primary:disabled{background:var(--bg4);color:var(--text3);cursor:default;transform:none;}
+.btn-hold{flex:1;padding:14px;background:var(--bg3);color:var(--accent);border:1px solid var(--accent);border-radius:10px;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;}
+.btn-hold:disabled{border-color:var(--border2);color:var(--text3);cursor:default;}
+.btn-ghost{width:100%;padding:12px;background:none;border:1px solid var(--border2);border-radius:10px;color:var(--text3);font-size:13px;font-family:var(--font);cursor:pointer;margin-bottom:8px;}
 
-/* Pending detail modal */
-.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; }
-.modal-backdrop.hidden { display: none; }
-.modal { background: var(--bg2); border-radius: 16px 16px 0 0; border-top: 1px solid var(--border2); max-height: 85vh; display: flex; flex-direction: column; }
-.modal-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
-.modal-close { width: 32px; height: 32px; background: var(--bg3); border: none; border-radius: 50%; color: var(--text2); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.modal-body { flex: 1; overflow-y: auto; padding: 12px 16px; }
-.modal-footer { padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
+/* Food page */
+.food-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s,opacity .2s;}
+.food-item:active{opacity:.8;}
+.food-item.done{opacity:.45;border-color:var(--border);}
+.food-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.food-icon.pending{background:rgba(200,169,110,.15);border:1px solid var(--accent);}
+.food-icon.done{background:var(--bg3);border:1px solid var(--border2);}
+.food-body{flex:1;}
+.food-name{font-size:14px;font-weight:700;color:var(--text);}
+.food-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+.food-status{font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:5px;flex-shrink:0;}
+.food-status.pending{background:rgba(200,169,110,.15);color:var(--accent);}
+.food-status.done{background:rgba(90,158,122,.15);color:var(--green);}
+.food-done-section{margin-top:16px;}
+.food-done-toggle{width:100%;padding:10px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:12px;font-family:var(--font);cursor:pointer;margin-bottom:10px;}
+
+/* Sales page */
+.sales-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.stat-label{font-size:10px;color:var(--text2);font-family:var(--mono);letter-spacing:.08em;}
+.stat-val{font-size:20px;font-weight:700;color:var(--text);margin-top:4px;font-family:var(--mono);}
+.stat-val.accent{color:var(--accent);}
+.stat-val.green{color:var(--green);}
+.history-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px;}
+.history-item:last-child{border-bottom:none;}
+.hi-time{font-size:11px;color:var(--text3);font-family:var(--mono);min-width:48px;}
+.hi-body{flex:1;}
+.hi-name{font-size:13px;color:var(--text);}
+.hi-meta{font-size:11px;color:var(--text2);margin-top:1px;}
+.hi-pay{font-size:10px;padding:2px 6px;border-radius:4px;margin-left:4px;}
+.hi-pay.cash{background:rgba(90,158,122,.15);color:var(--green);}
+.hi-pay.card{background:rgba(90,130,180,.15);color:var(--blue);}
+.hi-pay.other{background:rgba(200,169,110,.15);color:var(--accent);}
+.hi-amt{font-size:13px;font-family:var(--mono);color:var(--text);}
+
+/* Modal */
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;flex-direction:column;justify-content:flex-end;}
+.modal-backdrop.hidden{display:none;}
+.modal{background:var(--bg2);border-radius:16px 16px 0 0;border-top:1px solid var(--border2);max-height:88vh;display:flex;flex-direction:column;}
+.modal-hd{padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);}
+.modal-close{width:32px;height:32px;background:var(--bg3);border:none;border-radius:50%;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-body{flex:1;overflow-y:auto;padding:12px 16px;}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}
 
 /* Toast */
-.toast { position: absolute; top: 16px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 20px; font-size: 13px; color: var(--text); z-index: 100; transition: transform 0.25s ease; white-space: nowrap; }
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.success { border-color: var(--green); color: var(--green); }
-.toast.error   { border-color: var(--red);   color: var(--red); }
+.toast{position:absolute;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 20px;font-size:13px;color:var(--text);z-index:100;transition:transform .25s ease;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:var(--green);color:var(--green);}
+.toast.error{border-color:var(--red);color:var(--red);}
 
-.empty { text-align: center; padding: 40px 16px; color: var(--text3); font-size: 13px; line-height: 2; }
+.empty{text-align:center;padding:40px 16px;color:var(--text3);font-size:13px;line-height:2;}
 </style>
 </head>
 <body>
-<div class="app" style="position:relative;">
+<div class="app">
 
-  <!-- Header -->
   <div class="header">
     <div>
       <div class="header-title">茶割 POS</div>
       <div class="header-date" id="hdr-date"></div>
     </div>
-    <div style="display:flex;gap:8px;">
-      <button class="nav-tab active" onclick="showPage('menu',this)">メニュー</button>
-      <button class="nav-tab" onclick="showPage('cart',this)">カート</button>
-    </div>
   </div>
 
-  <!-- Cart bar -->
-  <div class="cart-bar">
+  <div class="cart-bar" id="cart-bar-wrap">
     <div>
       <div class="cart-total-label">カート合計</div>
       <div class="cart-total-val" id="bar-total">¥0</div>
       <div class="cart-count" id="bar-count">0品</div>
     </div>
-    <button class="send-btn" id="bar-send-btn" onclick="showPage('cart',document.querySelectorAll('.nav-tab')[1])" disabled>確認 →</button>
+    <button class="confirm-btn" id="bar-confirm-btn" onclick="goCart()" disabled>確認 →</button>
   </div>
 
-  <!-- Pending bar -->
   <div class="pending-bar" id="pending-bar"></div>
 
-  <!-- Content -->
   <div class="content">
-
-    <!-- Menu -->
+    <!-- メニュー -->
     <div id="page-menu" class="page active">
-      <div class="menu-section-title">お茶割り・おつまみ</div>
+      <div class="sec-title">お茶割り・おつまみ</div>
       <div class="menu-grid" id="grid-my"></div>
-      <div class="menu-section-title">お店の在庫</div>
+      <div class="sec-title">お店の在庫</div>
       <div class="menu-grid" id="grid-shop"></div>
       <div class="other-card">
         <div class="other-title">その他（金額入力）</div>
         <div class="other-row">
-          <input class="other-input" type="number" id="other-amount" placeholder="金額" min="0">
-          <button class="other-stock-btn active" id="ost-my"   onclick="setOtherStock('自在庫')">自在庫</button>
-          <button class="other-stock-btn"        id="ost-shop" onclick="setOtherStock('店舗在庫')">店舗</button>
-          <button class="other-add-btn" id="other-add-btn" onclick="addOther()">＋</button>
+          <input class="oi" type="number" id="other-amount" placeholder="金額" min="0">
+          <button class="osb active" id="ost-my"   onclick="setOtherStock('自在庫')">自在庫</button>
+          <button class="osb"        id="ost-shop" onclick="setOtherStock('店舗在庫')">店舗</button>
+          <button class="oab" id="other-add-btn" onclick="addOther()">＋</button>
         </div>
       </div>
     </div>
 
-    <!-- Cart -->
+    <!-- カート -->
     <div id="page-cart" class="page">
       <div id="cart-content"></div>
     </div>
 
+    <!-- フード -->
+    <div id="page-food" class="page">
+      <div id="food-content"></div>
+    </div>
+
+    <!-- 売上 -->
+    <div id="page-sales" class="page">
+      <div id="sales-content"></div>
+    </div>
   </div>
 
-  <!-- Pending detail modal -->
+  <div class="bottom-nav">
+    <button class="bnav-btn active" onclick="showPage('menu',0)" id="bnav-0">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>メニュー
+    </button>
+    <button class="bnav-btn" onclick="showPage('cart',1)" id="bnav-1">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>カート
+    </button>
+    <button class="bnav-btn" onclick="showPage('food',2)" id="bnav-2">
+      <svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.66 1.34 3 3 3h1v10h2V12h1c1.66 0 3-1.34 3-3V2h-2v5H9V2H7v5H5V2H3zM17 2c-1.66 0-3 1.34-3 3v6c0 1.54 1.1 2.82 2.55 3.08L16 21h2l-.45-6.92C18.9 13.82 20 12.54 20 11V5c0-1.66-1.34-3-3-3z" stroke="none" fill="currentColor"/></svg>フード
+    </button>
+    <button class="bnav-btn" onclick="showPage('sales',3)" id="bnav-3">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>売上
+    </button>
+  </div>
+
+  <!-- 保留モーダル -->
   <div class="modal-backdrop hidden" id="modal-backdrop" onclick="closeModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
-      <div class="modal-header">
+      <div class="modal-hd">
         <span class="modal-title" id="modal-title">—</span>
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
@@ -206,63 +267,77 @@ const BASHO_DAI = 3000;
 const LABELS    = ["A","B","C","D","E","F"];
 
 const MENU = [
-  { name:"緑茶割り",    price:500,  stock:"自在庫" },
-  { name:"ほうじ茶割",  price:500,  stock:"自在庫" },
-  { name:"小鉢",        price:300,  stock:"自在庫" },
-  { name:"小鉢4種盛り", price:1000, stock:"自在庫" },
-  { name:"スペシャル",  price:500,  stock:"自在庫" },
-  { name:"ワイン",      price:1100, stock:"店舗在庫" },
-  { name:"ドラフトビール", price:1000, stock:"店舗在庫" },
-  { name:"缶ビール",    price:1100, stock:"店舗在庫" },
+  {name:"緑茶割り",    price:500,  stock:"自在庫", isFood:false},
+  {name:"ほうじ茶割",  price:500,  stock:"自在庫", isFood:false},
+  {name:"小鉢",        price:300,  stock:"自在庫", isFood:true},
+  {name:"小鉢4種盛り", price:1000, stock:"自在庫", isFood:true},
+  {name:"スペシャル",  price:500,  stock:"自在庫", isFood:false},
+  {name:"ワイン",      price:1100, stock:"店舗在庫",isFood:false},
+  {name:"ドラフトビール",price:1000,stock:"店舗在庫",isFood:false},
+  {name:"缶ビール",    price:1100, stock:"店舗在庫",isFood:false},
 ];
 
-// cart: 現在入力中、pendingOrders: 保留中 [{label, memo, items:[{id,name,price,stock,qty}]}]
-let cart = [];
-let pendingOrders = [];
-let otherStock    = "自在庫";
-let currentPage   = "menu";
-let activePending = null; // モーダル表示中の保留index
+let cart         = [];
+let pendingOrders= [];
+let foodQueue    = []; // {id, name, memo, done, time}
+let salesHistory = []; // {id, items, total, myTotal, payMethod, memo, time}
+let otherStock   = "自在庫";
+let currentPage  = 0;
+let showDoneFood = false;
+let activePendingIdx = null;
 
-// ── 日付 ──
+// ── 日付・時間 ──
 function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
 function todayLabel() {
-  const d = new Date();
-  const dow = ["日","月","火","水","木","金","土"][d.getDay()];
-  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${dow}）`;
+  const d=new Date();
+  const dow=["日","月","火","水","木","金","土"][d.getDay()];
+  return d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日（"+dow+"）";
 }
 function currentSlot() {
-  const h = new Date().getHours();
-  if (h < 19) return "18:00〜19:00";
-  if (h < 20) return "19:00〜20:00";
-  if (h < 21) return "20:00〜21:00";
-  if (h < 22) return "21:00〜22:00";
-  if (h < 23) return "22:00〜23:00";
-  return "23:00〜閉店";
+  const h=new Date().getHours();
+  if(h<19)return"18:00〜19:00";if(h<20)return"19:00〜20:00";
+  if(h<21)return"20:00〜21:00";if(h<22)return"21:00〜22:00";
+  if(h<23)return"22:00〜23:00";return"23:00〜閉店";
+}
+function nowTime() {
+  const d=new Date();
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 }
 document.getElementById("hdr-date").textContent = todayLabel();
 
-// ── 次の保留ラベル ──
-function nextLabel() {
-  const used = pendingOrders.map(p => p.label);
-  return LABELS.find(l => !used.includes(l)) || "Z";
+// ── ページ切替 ──
+function showPage(name, idx) {
+  currentPage = idx;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".bnav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-"+name).classList.add("active");
+  document.getElementById("bnav-"+idx).classList.add("active");
+  // cart-barとpending-barはメニュー・カートのみ表示
+  const showBar = (name==="menu"||name==="cart");
+  document.getElementById("cart-bar-wrap").style.display = showBar ? "" : "none";
+  document.getElementById("pending-bar").style.display   = showBar ? "" : "none";
+  if(name==="cart")  renderCartPage();
+  if(name==="food")  renderFoodPage();
+  if(name==="sales") renderSalesPage();
 }
+function goCart() { showPage("cart",1); }
 
 // ── メニューグリッド ──
 function renderMenuGrid() {
   ["my","shop"].forEach(type => {
-    const items = MENU.filter(m => (type === "my" ? m.stock === "自在庫" : m.stock === "店舗在庫"));
-    document.getElementById(`grid-${type}`).innerHTML = items.map(m => {
-      const cartItem = cart.find(c => c.name === m.name && c.stock === m.stock);
-      const qty = cartItem ? cartItem.qty : 0;
-      return `<button class="menu-btn ${qty > 0 ? "in-cart" : ""}" onclick="addToCart('${m.name}',${m.price},'${m.stock}')">
-        ${qty > 0 ? `<div class="cart-badge">${qty}</div>` : ""}
-        <div class="menu-name">${m.name}</div>
-        <div class="menu-price">¥${m.price.toLocaleString()}</div>
-        <div class="menu-stock ${type}">${m.stock}</div>
-      </button>`;
+    const items = MENU.filter(m=>type==="my"?m.stock==="自在庫":m.stock==="店舗在庫");
+    document.getElementById("grid-"+type).innerHTML = items.map(m=>{
+      const ci = cart.find(c=>c.name===m.name&&c.stock===m.stock);
+      const qty = ci?ci.qty:0;
+      return '<button class="menu-btn'+(qty>0?" in-cart":"")+'" onclick="addToCart(\''+m.name+'\','+m.price+',\''+m.stock+'\','+m.isFood+')">'
+        +(qty>0?'<div class="cart-badge">'+qty+'</div>':"")
+        +'<div class="mn">'+m.name+'</div>'
+        +'<div class="mp">¥'+m.price.toLocaleString()+'</div>'
+        +'<div class="ms '+type+'">'+m.stock+(m.isFood?" 🍽":"")+'</div>'
+        +'</button>';
     }).join("");
   });
 }
@@ -270,348 +345,441 @@ function renderMenuGrid() {
 // ── 保留バー ──
 function renderPendingBar() {
   const bar = document.getElementById("pending-bar");
-  if (pendingOrders.length === 0) {
-    bar.innerHTML = '<div class="pending-bar-empty">保留なし</div>';
-    return;
+  if(pendingOrders.length===0){
+    bar.innerHTML='<div class="pending-bar-empty">保留なし</div>';return;
   }
-  bar.innerHTML = `<div class="pending-bar-inner">` +
-    pendingOrders.map((p, i) => {
-      const total = p.items.reduce((s, c) => s + c.price * c.qty, 0);
-      return `<div class="pending-chip" onclick="openPendingModal(${i})">
-        <div class="pending-chip-label">${p.label}</div>
-        ${p.memo ? `<div class="pending-chip-memo">${p.memo}</div>` : ""}
-        <div class="pending-chip-amt">¥${total.toLocaleString()}</div>
-      </div>`;
-    }).join("") +
-  `</div>`;
+  let html='<div class="pending-bar-inner">';
+  pendingOrders.forEach((p,i)=>{
+    const total=p.items.reduce((s,c)=>s+c.price*c.qty,0);
+    html+='<div class="pending-chip" onclick="openPendingModal('+i+')">'
+      +'<div class="pc-label">'+p.label+'</div>'
+      +(p.memo?'<div class="pc-memo">'+p.memo+'</div>':"")
+      +'<div class="pc-amt">¥'+total.toLocaleString()+'</div>'
+      +'</div>';
+  });
+  bar.innerHTML=html+'</div>';
 }
 
-// ── カート追加（通常メニュー） ──
-function addToCart(name, price, stock) {
-  const existing = cart.find(c => c.name === name && c.stock === stock);
-  if (existing) { existing.qty++; } else { cart.push({ id: Date.now(), name, price, stock, qty: 1 }); }
+// ── フードバッジ更新 ──
+function updateFoodBadge() {
+  const pending = foodQueue.filter(f=>!f.done).length;
+  const btn = document.getElementById("bnav-2");
+  let badge = btn.querySelector(".bnav-badge");
+  if(pending>0){
+    if(!badge){badge=document.createElement("div");badge.className="bnav-badge";btn.appendChild(badge);}
+    badge.textContent=pending;
+  } else {
+    if(badge) badge.remove();
+  }
+}
+
+// ── カートに追加 ──
+function addToCart(name, price, stock, isFood) {
+  const existing = cart.find(c=>c.name===name&&c.stock===stock);
+  if(existing){existing.qty++;}
+  else{cart.push({id:Date.now(),name,price,stock,isFood:!!isFood,qty:1});}
   updateCartBar();
   renderMenuGrid();
-  navigator.vibrate && navigator.vibrate(30);
-}
-
-// ── カート追加（保留伝票への追加） ──
-function addToPending(idx, name, price, stock) {
-  const order = pendingOrders[idx];
-  const existing = order.items.find(c => c.name === name && c.stock === stock);
-  if (existing) { existing.qty++; } else { order.items.push({ id: Date.now(), name, price, stock, qty: 1 }); }
-  renderPendingBar();
-  renderPendingModal(idx);
-  navigator.vibrate && navigator.vibrate(30);
+  navigator.vibrate&&navigator.vibrate(30);
 }
 
 // ── その他 ──
 function setOtherStock(type) {
-  otherStock = type;
-  document.getElementById("ost-my").classList.toggle("active", type === "自在庫");
-  document.getElementById("ost-shop").classList.toggle("active", type === "店舗在庫");
+  otherStock=type;
+  document.getElementById("ost-my").classList.toggle("active",type==="自在庫");
+  document.getElementById("ost-shop").classList.toggle("active",type==="店舗在庫");
 }
 function addOther() {
-  const val = Number(document.getElementById("other-amount").value);
-  if (!val || val <= 0) return;
-  cart.push({ id: Date.now(), name: "その他", price: val, stock: otherStock, qty: 1 });
-  document.getElementById("other-amount").value = "";
+  const val=Number(document.getElementById("other-amount").value);
+  if(!val||val<=0)return;
+  cart.push({id:Date.now(),name:"その他",price:val,stock:otherStock,isFood:false,qty:1});
+  document.getElementById("other-amount").value="";
   document.getElementById("other-add-btn").classList.remove("ready");
-  updateCartBar();
-  renderMenuGrid();
-  showToast(`¥${val.toLocaleString()} を追加しました`, "success");
+  updateCartBar();renderMenuGrid();
+  showToast("¥"+val.toLocaleString()+" を追加しました","success");
 }
 
 // ── カートバー ──
 function updateCartBar() {
-  const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
-  const count = cart.reduce((s, c) => s + c.qty, 0);
-  document.getElementById("bar-total").textContent = `¥${total.toLocaleString()}`;
-  document.getElementById("bar-count").textContent = `${count}品`;
-  document.getElementById("bar-send-btn").disabled = cart.length === 0;
-  if (currentPage === "cart") renderCartPage();
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const count=cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById("bar-total").textContent="¥"+total.toLocaleString();
+  document.getElementById("bar-count").textContent=count+"品";
+  document.getElementById("bar-confirm-btn").disabled=cart.length===0;
+  if(currentPage===1)renderCartPage();
 }
 
 // ── 数量変更（カート） ──
-function changeQty(id, delta) {
-  const idx = cart.findIndex(c => c.id === id);
-  if (idx === -1) return;
-  cart[idx].qty += delta;
-  if (cart[idx].qty <= 0) cart.splice(idx, 1);
-  updateCartBar();
-  renderMenuGrid();
-}
-
-// ── 数量変更（保留） ──
-function changePendingQty(orderIdx, itemId, delta) {
-  const order = pendingOrders[orderIdx];
-  const idx   = order.items.findIndex(c => c.id === itemId);
-  if (idx === -1) return;
-  order.items[idx].qty += delta;
-  if (order.items[idx].qty <= 0) order.items.splice(idx, 1);
-  renderPendingBar();
-  renderPendingModal(orderIdx);
+function changeQty(id,delta) {
+  const idx=cart.findIndex(c=>c.id===id);
+  if(idx===-1)return;
+  cart[idx].qty+=delta;
+  if(cart[idx].qty<=0)cart.splice(idx,1);
+  updateCartBar();renderMenuGrid();
 }
 
 // ── カートページ ──
+let selectedPayMethod = "現金";
 function renderCartPage() {
-  const el = document.getElementById("cart-content");
-  if (cart.length === 0) {
-    el.innerHTML = '<div class="empty">カートは空です<br>メニューから追加してください</div>';
-    return;
-  }
-  const myItems    = cart.filter(c => c.stock !== "店舗在庫");
-  const shopItems  = cart.filter(c => c.stock === "店舗在庫");
-  const totalSales = cart.reduce((s,c) => s + c.price * c.qty, 0);
-  const myTotal    = myItems.reduce((s,c) => s + c.price * c.qty, 0);
-  const shopTotal  = shopItems.reduce((s,c) => s + c.price * c.qty, 0);
-  const myShare    = myTotal - BASHO_DAI;
+  const el=document.getElementById("cart-content");
+  if(cart.length===0){el.innerHTML='<div class="empty">カートは空です<br>メニューから追加してください</div>';return;}
 
-  function itemRows(items) {
-    let html = "";
-    items.forEach(c => {
-      const sc = c.stock === "店舗在庫" ? "shop" : "my";
-      html += '<div class="cart-item">'
-        + '<div style="flex:1"><div class="cart-item-name">' + c.name + '</div>'
-        + '<span class="cart-item-stock ' + sc + '">' + c.stock + '</span></div>'
-        + '<div class="qty-ctrl">'
-        + '<button class="qty-btn" onclick="changeQty(' + c.id + ',-1)">−</button>'
-        + '<span class="qty-num">' + c.qty + '</span>'
-        + '<button class="qty-btn" onclick="changeQty(' + c.id + ',+1)">＋</button>'
-        + '</div>'
-        + '<div class="cart-item-sub">¥' + (c.price * c.qty).toLocaleString() + '</div>'
-        + '</div>';
-    });
-    return html;
+  const myItems   =cart.filter(c=>c.stock!=="店舗在庫");
+  const shopItems =cart.filter(c=>c.stock==="店舗在庫");
+  const totalSales=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const myTotal   =myItems.reduce((s,c)=>s+c.price*c.qty,0);
+  const shopTotal =shopItems.reduce((s,c)=>s+c.price*c.qty,0);
+
+  function itemRowsHtml(items) {
+    let h="";
+    items.forEach(c=>{
+      const sc=c.stock==="店舗在庫"?"shop":"my";
+      h+='<div class="cart-item">'
+        +'<div style="flex:1"><div class="ci-name">'+c.name+(c.isFood?' <span style="font-size:11px;color:var(--accent)">🍽</span>':"")+'</div>'
+        +'<span class="ci-stock '+sc+'">'+c.stock+'</span></div>'
+        +'<div class="qty-ctrl">'
+        +'<button class="qb" onclick="changeQty('+c.id+',-1)">−</button>'
+        +'<span class="qn">'+c.qty+'</span>'
+        +'<button class="qb" onclick="changeQty('+c.id+',+1)">＋</button>'
+        +'</div>'
+        +'<div class="ci-sub">¥'+(c.price*c.qty).toLocaleString()+'</div>'
+        +'</div>';
+    });return h;
   }
 
-  let out = "";
-  if (myItems.length > 0)
-    out += '<div class="cart-section"><div class="cart-section-hd">自在庫</div>' + itemRows(myItems) + '</div>';
-  if (shopItems.length > 0)
-    out += '<div class="cart-section"><div class="cart-section-hd">店舗在庫</div>' + itemRows(shopItems) + '</div>';
+  let out="";
+  if(myItems.length>0)   out+='<div class="cart-sec"><div class="cart-sec-hd">自在庫</div>'+itemRowsHtml(myItems)+'</div>';
+  if(shopItems.length>0) out+='<div class="cart-sec"><div class="cart-sec-hd">店舗在庫</div>'+itemRowsHtml(shopItems)+'</div>';
 
-  out += '<div class="pl-block">'
-    + '<div class="pl-row"><span class="pl-label">売上合計</span><span class="pl-val">¥' + totalSales.toLocaleString() + '</span></div>'
-    + '<div class="pl-row"><span class="pl-label">自在庫売上</span><span class="pl-val" style="color:var(--green)">¥' + myTotal.toLocaleString() + '</span></div>'
-    + (shopTotal > 0 ? '<div class="pl-row"><span class="pl-label">店舗在庫売上</span><span class="pl-val" style="color:var(--blue)">¥' + shopTotal.toLocaleString() + '</span></div>' : "")
-    + '<div class="pl-row"><span class="pl-label">場所代</span><span class="pl-val" style="color:var(--red)">− ¥' + BASHO_DAI.toLocaleString() + '</span></div>'
-    + '<div class="pl-row total"><span class="pl-label" style="color:var(--text)">手取り</span>'
-    + '<span class="pl-val" style="color:' + (myShare >= 0 ? 'var(--accent)' : 'var(--red)') + '">¥' + myShare.toLocaleString() + '</span></div>'
-    + '</div>';
+  out+='<div class="sum-block">'
+    +'<div class="sum-row"><span class="sum-label">売上合計</span><span class="sum-val">¥'+totalSales.toLocaleString()+'</span></div>'
+    +'<div class="sum-row"><span class="sum-label">自在庫売上</span><span class="sum-val" style="color:var(--green)">¥'+myTotal.toLocaleString()+'</span></div>'
+    +(shopTotal>0?'<div class="sum-row"><span class="sum-label">店舗在庫売上</span><span class="sum-val" style="color:var(--blue)">¥'+shopTotal.toLocaleString()+'</span></div>':"")
+    +'</div>';
 
-  out += '<div class="memo-field"><div class="memo-label">MEMO（任意）</div>'
-    + '<input class="memo-input" type="text" id="cart-memo" placeholder="天気・客数など"></div>';
+  const pays=["現金","カード","その他"];
+  out+='<div class="pay-block"><div class="pay-title">支払い方法</div><div class="pay-btns">'
+    +pays.map(p=>'<button class="pay-btn'+(selectedPayMethod===p?" active":"")+'" onclick="selectPay(\''+p+'\')">'+p+'</button>').join("")
+    +'</div></div>';
 
-  out += '<div class="btn-row">'
-    + '<button class="hold-btn" onclick="holdCart()">保留</button>'
-    + '<button class="submit-full" onclick="submitCart()">精算・送信</button>'
-    + '</div>'
-    + '<button class="clear-btn" onclick="clearCart()">カートをリセット</button>';
+  out+='<div class="memo-block"><div class="memo-label">MEMO（任意）</div>'
+    +'<input class="memo-input" type="text" id="cart-memo" placeholder="天気・客数など"></div>';
 
-  el.innerHTML = out;
+  out+='<div class="btn-row">'
+    +'<button class="btn-hold" onclick="holdCart()">保留</button>'
+    +'<button class="btn-primary" onclick="submitCart()">精算・送信</button>'
+    +'</div>'
+    +'<button class="btn-ghost" onclick="clearCart()">カートをリセット</button>';
+
+  el.innerHTML=out;
+}
+function selectPay(method) {
+  selectedPayMethod=method;
+  renderCartPage();
 }
 
 // ── 保留 ──
+function nextLabel(){
+  const used=pendingOrders.map(p=>p.label);
+  return LABELS.find(l=>!used.includes(l))||"Z";
+}
 function holdCart() {
-  if (cart.length === 0) return;
-  const label = nextLabel();
-  const memo  = document.getElementById("cart-memo")?.value || "";
-  pendingOrders.push({ label, memo, items: [...cart] });
-  cart = [];
-  updateCartBar();
-  renderMenuGrid();
-  renderPendingBar();
-  showToast(`${label} として保留しました`, "success");
-  showPage("menu", document.querySelectorAll(".nav-tab")[0]);
+  if(cart.length===0)return;
+  const memo=document.getElementById("cart-memo")?.value||"";
+  pendingOrders.push({label:nextLabel(),memo,items:[...cart.map(c=>({...c}))],payMethod:selectedPayMethod});
+  cart=[];
+  updateCartBar();renderMenuGrid();renderPendingBar();
+  showToast("保留しました","success");
+  showPage("menu",0);
 }
 
-// ── 精算（カートから直接） ──
+// ── カートから精算 ──
 async function submitCart() {
-  if (cart.length === 0) return;
-  const memo = document.getElementById("cart-memo")?.value || "";
-  await sendItems(cart, memo);
-  cart = [];
-  updateCartBar();
-  renderMenuGrid();
-  showPage("menu", document.querySelectorAll(".nav-tab")[0]);
+  if(cart.length===0)return;
+  const memo=document.getElementById("cart-memo")?.value||"";
+  await processPayment(cart,memo,selectedPayMethod);
+  cart=[];
+  updateCartBar();renderMenuGrid();
+  showPage("menu",0);
 }
 
-// ── 保留モーダル ──
-function openPendingModal(idx) {
-  activePending = idx;
-  renderPendingModal(idx);
-  document.getElementById("modal-backdrop").classList.remove("hidden");
-}
-function closeModal(e) {
-  if (e && e.target !== document.getElementById("modal-backdrop")) return;
-  document.getElementById("modal-backdrop").classList.add("hidden");
-  activePending = null;
-}
+// ── 精算共通処理 ──
+async function processPayment(items, memo, payMethod) {
+  const total   =items.reduce((s,c)=>s+c.price*c.qty,0);
+  const myTotal =items.filter(c=>c.stock!=="店舗在庫").reduce((s,c)=>s+c.price*c.qty,0);
+  const time    =nowTime();
 
-function renderPendingModal(idx) {
-  const order = pendingOrders[idx];
-  if (!order) return;
-
-  const total   = order.items.reduce((s,c) => s + c.price * c.qty, 0);
-  const myItems = order.items.filter(c => c.stock !== "店舗在庫");
-  const myTotal = myItems.reduce((s,c) => s + c.price * c.qty, 0);
-  const myShare = myTotal - BASHO_DAI;
-
-  document.getElementById("modal-title").textContent =
-    order.label + (order.memo ? " ／ " + order.memo : "");
-
-  // 品目一覧
-  let itemHtml = "";
-  order.items.forEach(c => {
-    const stockClass = c.stock === "店舗在庫" ? "shop" : "my";
-    itemHtml += '<div class="cart-item">'
-      + '<div style="flex:1"><div class="cart-item-name">' + c.name + '</div>'
-      + '<span class="cart-item-stock ' + stockClass + '">' + c.stock + '</span></div>'
-      + '<div class="qty-ctrl">'
-      + '<button class="qty-btn" onclick="changePendingQty(' + idx + ',' + c.id + ',-1)">−</button>'
-      + '<span class="qty-num">' + c.qty + '</span>'
-      + '<button class="qty-btn" onclick="changePendingQty(' + idx + ',' + c.id + ',+1)">＋</button>'
-      + '</div>'
-      + '<div class="cart-item-sub">¥' + (c.price * c.qty).toLocaleString() + '</div>'
-      + '</div>';
+  // フードキューに追加
+  items.forEach(c=>{
+    if(c.isFood){
+      for(let i=0;i<c.qty;i++){
+        foodQueue.push({id:Date.now()+Math.random(),name:c.name,memo:memo||"",done:false,time});
+      }
+    }
   });
+  updateFoodBadge();
 
-  // 追加注文ボタン
-  let addBtns = "";
-  MENU.forEach(m => {
-    addBtns += '<button style="padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);'
-      + 'border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);cursor:pointer;"'
-      + ' onclick="addToPending(' + idx + ',\'' + m.name + '\',' + m.price + ',\'' + m.stock + '\')">'
-      + m.name + '<br><span style="font-size:11px;color:var(--text2);font-family:var(--mono)">¥'
-      + m.price.toLocaleString() + '</span></button>';
-  });
+  // 売上履歴に追加
+  salesHistory.push({id:Date.now(),items:[...items.map(c=>({...c}))],total,myTotal,payMethod,memo,time});
 
-  // PL
-  let plHtml = '<div class="pl-block" style="margin-bottom:12px;">'
-    + '<div class="pl-row"><span class="pl-label">合計</span><span class="pl-val">¥' + total.toLocaleString() + '</span></div>'
-    + '<div class="pl-row"><span class="pl-label">自在庫売上</span><span class="pl-val" style="color:var(--green)">¥' + myTotal.toLocaleString() + '</span></div>'
-    + '<div class="pl-row"><span class="pl-label">場所代</span><span class="pl-val" style="color:var(--red)">− ¥' + BASHO_DAI.toLocaleString() + '</span></div>'
-    + '<div class="pl-row total"><span class="pl-label" style="color:var(--text)">手取り</span>'
-    + '<span class="pl-val" style="color:' + (myShare >= 0 ? 'var(--accent)' : 'var(--red)') + '">¥' + myShare.toLocaleString() + '</span></div>'
-    + '</div>';
-
-  // その他入力
-  const otherId  = "modal-other-amount-" + idx;
-  const myBtnId  = "modal-ost-my-" + idx;
-  const shBtnId  = "modal-ost-shop-" + idx;
-  const addBtnId = "modal-other-add-" + idx;
-  const otherHtml = '<div style="font-size:11px;color:var(--text3);letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px;">その他（金額入力）</div>'
-    + '<div style="display:flex;gap:8px;margin-bottom:4px;">'
-    + '<input class="other-input" type="number" id="' + otherId + '" placeholder="金額" min="0" style="flex:1;">'
-    + '<button class="other-stock-btn active" id="' + myBtnId + '" onclick="setModalOtherStock(' + idx + ',\'自在庫\')">自在庫</button>'
-    + '<button class="other-stock-btn" id="' + shBtnId + '" onclick="setModalOtherStock(' + idx + ',\'店舗在庫\')">店舗</button>'
-    + '<button class="other-add-btn" id="' + addBtnId + '" onclick="addOtherToPending(' + idx + ')">＋</button>'
-    + '</div>';
-
-  document.getElementById("modal-body").innerHTML =
-    '<div style="margin-bottom:12px;">' + itemHtml + '</div>'
-    + plHtml
-    + '<div style="font-size:11px;color:var(--text3);letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px;">追加注文</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;">' + addBtns + '</div>'
-    + otherHtml;
-
-  document.getElementById("modal-footer").innerHTML =
-    '<div class="btn-row">'
-    + '<button class="hold-btn" style="color:var(--red);border-color:var(--red);" onclick="deletePending(' + idx + ')">削除</button>'
-    + '<button class="submit-full" onclick="settlePending(' + idx + ')">精算・送信</button>'
-    + '</div>';
-}
-
-// ── モーダル内その他の在庫区分 ──
-function setModalOtherStock(idx, type) {
-  document.getElementById(`modal-ost-my-${idx}`).classList.toggle("active", type === "自在庫");
-  document.getElementById(`modal-ost-shop-${idx}`).classList.toggle("active", type === "店舗在庫");
-}
-function addOtherToPending(idx) {
-  const amtEl = document.getElementById(`modal-other-amount-${idx}`);
-  const val   = Number(amtEl.value);
-  if (!val || val <= 0) return;
-  const myBtn   = document.getElementById(`modal-ost-my-${idx}`);
-  const stock   = myBtn.classList.contains("active") ? "自在庫" : "店舗在庫";
-  addToPending(idx, "その他", val, stock);
-  amtEl.value = "";
-  document.getElementById(`modal-other-add-${idx}`).classList.remove("ready");
-  showToast(`¥${val.toLocaleString()} を追加しました`, "success");
-}
-
-// ── 保留精算 ──
-async function settlePending(idx) {
-  const order = pendingOrders[idx];
-  if (!order || order.items.length === 0) return;
-  await sendItems(order.items, order.memo || "");
-  pendingOrders.splice(idx, 1);
-  renderPendingBar();
-  document.getElementById("modal-backdrop").classList.add("hidden");
-  activePending = null;
-}
-
-// ── 保留削除 ──
-function deletePending(idx) {
-  if (!confirm("この保留伝票を削除しますか？")) return;
-  pendingOrders.splice(idx, 1);
-  renderPendingBar();
-  document.getElementById("modal-backdrop").classList.add("hidden");
-  activePending = null;
-  showToast("保留を削除しました", "");
-}
-
-// ── GAS送信 ──
-async function sendItems(items, memo) {
-  const date = todayStr();
-  const slot = currentSlot();
-  const btn  = document.querySelector(".submit-full");
-  if (btn) { btn.disabled = true; btn.textContent = "送信中..."; }
-
+  // GAS送信
+  const date=todayStr(),slot=currentSlot();
   try {
-    for (const item of items) {
-      await fetch(GAS_URL, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action:"addSale", date, timeSlot:slot, drinkName:item.name, price:item.price, cups:item.qty, stockType:item.stock, memo })
+    for(const item of items){
+      await fetch(GAS_URL,{
+        method:"POST",mode:"no-cors",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"addSale",date,timeSlot:slot,drinkName:item.name,price:item.price,cups:item.qty,stockType:item.stock,memo:memo+"【"+payMethod+"】"})
       });
     }
-    const total = items.reduce((s,c) => s + c.price * c.qty, 0);
-    showToast(`¥${total.toLocaleString()} を送信しました ✓`, "success");
-  } catch(e) {
-    showToast("送信に失敗しました", "error");
-    if (btn) { btn.disabled = false; btn.textContent = "精算・送信"; }
+    showToast("¥"+total.toLocaleString()+" を送信しました ✓","success");
+  } catch(e){
+    showToast("送信に失敗しました","error");
   }
 }
 
 // ── カートリセット ──
-function clearCart() {
-  cart = [];
-  updateCartBar();
-  renderMenuGrid();
+function clearCart(){cart=[];updateCartBar();renderMenuGrid();}
+
+// ── フードページ ──
+function renderFoodPage() {
+  const el=document.getElementById("food-content");
+  const pending=foodQueue.filter(f=>!f.done);
+  const done   =foodQueue.filter(f=>f.done);
+
+  if(foodQueue.length===0){
+    el.innerHTML='<div class="empty">フードの注文はありません<br>メニューから注文を追加してください</div>';
+    return;
+  }
+
+  let out="";
+  if(pending.length>0){
+    out+='<div class="sec-title">未提供 ('+pending.length+'件)</div>';
+    pending.forEach(f=>{
+      out+='<div class="food-item" onclick="toggleFood(\''+f.id+'\')">'
+        +'<div class="food-icon pending">🍽</div>'
+        +'<div class="food-body">'
+        +'<div class="food-name">'+f.name+'</div>'
+        +'<div class="food-meta">'+f.time+(f.memo?" ／ "+f.memo:"")+'</div>'
+        +'</div>'
+        +'<div class="food-status pending">未提供</div>'
+        +'</div>';
+    });
+  }
+
+  if(done.length>0){
+    out+='<div class="food-done-section">'
+      +'<button class="food-done-toggle" onclick="toggleDoneSection()">'
+      +(showDoneFood?"▲ 提供済みを隠す":"▼ 提供済み ("+done.length+"件)")+'</button>';
+    if(showDoneFood){
+      done.forEach(f=>{
+        out+='<div class="food-item done" onclick="toggleFood(\''+f.id+'\')">'
+          +'<div class="food-icon done">✓</div>'
+          +'<div class="food-body">'
+          +'<div class="food-name">'+f.name+'</div>'
+          +'<div class="food-meta">'+f.time+(f.memo?" ／ "+f.memo:"")+'</div>'
+          +'</div>'
+          +'<div class="food-status done">提供済み</div>'
+          +'</div>';
+      });
+    }
+    out+='</div>';
+  }
+
+  el.innerHTML=out;
+}
+function toggleFood(id) {
+  const item=foodQueue.find(f=>f.id==id);
+  if(!item)return;
+  item.done=!item.done;
+  updateFoodBadge();
+  renderFoodPage();
+  showToast(item.done?"提供済みにしました":"未提供に戻しました","success");
+}
+function toggleDoneSection(){showDoneFood=!showDoneFood;renderFoodPage();}
+
+// ── 売上ページ ──
+function renderSalesPage() {
+  const el=document.getElementById("sales-content");
+  if(salesHistory.length===0){
+    el.innerHTML='<div class="empty">本日の精算記録はありません</div>';return;
+  }
+
+  const totalSales  =salesHistory.reduce((s,h)=>s+h.total,0);
+  const totalMy     =salesHistory.reduce((s,h)=>s+h.myTotal,0);
+  const myShare     =totalMy - BASHO_DAI;
+  const cashTotal   =salesHistory.filter(h=>h.payMethod==="現金").reduce((s,h)=>s+h.total,0);
+  const cardTotal   =salesHistory.filter(h=>h.payMethod==="カード").reduce((s,h)=>s+h.total,0);
+  const otherTotal  =salesHistory.filter(h=>h.payMethod==="その他").reduce((s,h)=>s+h.total,0);
+
+  let out='<div class="sales-stat-grid">'
+    +'<div class="stat-card"><div class="stat-label">売上合計</div><div class="stat-val accent">¥'+totalSales.toLocaleString()+'</div></div>'
+    +'<div class="stat-card"><div class="stat-label">自在庫売上</div><div class="stat-val">¥'+totalMy.toLocaleString()+'</div></div>'
+    +'<div class="stat-card"><div class="stat-label">場所代</div><div class="stat-val" style="color:var(--red)">¥'+BASHO_DAI.toLocaleString()+'</div></div>'
+    +'<div class="stat-card"><div class="stat-label">手取り</div><div class="stat-val green">¥'+myShare.toLocaleString()+'</div></div>'
+    +'</div>';
+
+  out+='<div class="sum-block" style="margin-bottom:14px;">'
+    +'<div class="sum-row"><span class="sum-label">💴 現金</span><span class="sum-val">¥'+cashTotal.toLocaleString()+'</span></div>'
+    +(cardTotal>0?'<div class="sum-row"><span class="sum-label">💳 カード</span><span class="sum-val">¥'+cardTotal.toLocaleString()+'</span></div>':"")
+    +(otherTotal>0?'<div class="sum-row"><span class="sum-label">その他</span><span class="sum-val">¥'+otherTotal.toLocaleString()+'</span></div>':"")
+    +'</div>';
+
+  out+='<div class="sec-title">精算履歴</div>'
+    +'<div class="sum-block">';
+  salesHistory.slice().reverse().forEach(h=>{
+    const payClass=h.payMethod==="現金"?"cash":h.payMethod==="カード"?"card":"other";
+    const names=h.items.map(c=>c.name+(c.qty>1?"×"+c.qty:"")).join("、");
+    out+='<div class="history-item">'
+      +'<div class="hi-time">'+h.time+'</div>'
+      +'<div class="hi-body">'
+      +'<div class="hi-name">'+names+'<span class="hi-pay '+payClass+'">'+h.payMethod+'</span></div>'
+      +(h.memo?'<div class="hi-meta">'+h.memo+'</div>':"")
+      +'</div>'
+      +'<div class="hi-amt">¥'+h.total.toLocaleString()+'</div>'
+      +'</div>';
+  });
+  out+='</div>';
+  el.innerHTML=out;
 }
 
-// ── ページ切替 ──
-function showPage(name, btn) {
-  currentPage = name;
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
-  document.getElementById("page-" + name).classList.add("active");
-  btn.classList.add("active");
-  if (name === "cart") renderCartPage();
+// ── 保留モーダル ──
+function openPendingModal(idx) {
+  activePendingIdx=idx;
+  renderPendingModal(idx);
+  document.getElementById("modal-backdrop").classList.remove("hidden");
+}
+function closeModal(e) {
+  if(e&&e.target!==document.getElementById("modal-backdrop"))return;
+  document.getElementById("modal-backdrop").classList.add("hidden");
+  activePendingIdx=null;
+}
+function renderPendingModal(idx) {
+  const order=pendingOrders[idx];
+  if(!order)return;
+  const total   =order.items.reduce((s,c)=>s+c.price*c.qty,0);
+  const myTotal =order.items.filter(c=>c.stock!=="店舗在庫").reduce((s,c)=>s+c.price*c.qty,0);
+
+  document.getElementById("modal-title").textContent=order.label+(order.memo?" ／ "+order.memo:"");
+
+  let itemHtml="";
+  order.items.forEach(c=>{
+    const sc=c.stock==="店舗在庫"?"shop":"my";
+    itemHtml+='<div class="cart-item">'
+      +'<div style="flex:1"><div class="ci-name">'+c.name+'</div>'
+      +'<span class="ci-stock '+sc+'">'+c.stock+'</span></div>'
+      +'<div class="qty-ctrl">'
+      +'<button class="qb" onclick="changePendingQty('+idx+','+c.id+',-1)">−</button>'
+      +'<span class="qn">'+c.qty+'</span>'
+      +'<button class="qb" onclick="changePendingQty('+idx+','+c.id+',+1)">＋</button>'
+      +'</div>'
+      +'<div class="ci-sub">¥'+(c.price*c.qty).toLocaleString()+'</div>'
+      +'</div>';
+  });
+
+  let addBtns="";
+  MENU.forEach(m=>{
+    addBtns+='<button style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);cursor:pointer;" onclick="addToPending('+idx+',\''+m.name+'\','+m.price+',\''+m.stock+'\','+m.isFood+')">'
+      +m.name+'<br><span style="font-size:11px;color:var(--text2);font-family:var(--mono)">¥'+m.price.toLocaleString()+'</span></button>';
+  });
+
+  const otherId ="modal-other-amount-"+idx;
+  const myBtnId ="modal-ost-my-"+idx;
+  const shBtnId ="modal-ost-shop-"+idx;
+  const addBtnId="modal-other-add-"+idx;
+
+  let plHtml='<div class="sum-block" style="margin-bottom:12px;">'
+    +'<div class="sum-row"><span class="sum-label">合計</span><span class="sum-val">¥'+total.toLocaleString()+'</span></div>'
+    +'<div class="sum-row"><span class="sum-label">自在庫売上</span><span class="sum-val" style="color:var(--green)">¥'+myTotal.toLocaleString()+'</span></div>'
+    +'</div>';
+
+  const pays=["現金","カード","その他"];
+  let payHtml='<div class="pay-block" style="margin-bottom:12px;"><div class="pay-title">支払い方法</div><div class="pay-btns">'
+    +pays.map(p=>'<button class="pay-btn'+(order.payMethod===p?" active":"")+'" onclick="selectPendingPay('+idx+',\''+p+'\')">'+p+'</button>').join("")
+    +'</div></div>';
+
+  document.getElementById("modal-body").innerHTML=
+    '<div style="margin-bottom:12px;">'+itemHtml+'</div>'
+    +plHtml
+    +payHtml
+    +'<div style="font-size:11px;color:var(--text3);letter-spacing:.08em;font-family:var(--mono);margin-bottom:8px;">追加注文</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;">'+addBtns+'</div>'
+    +'<div style="font-size:11px;color:var(--text3);letter-spacing:.08em;font-family:var(--mono);margin-bottom:8px;">その他（金額入力）</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:4px;">'
+    +'<input class="oi" type="number" id="'+otherId+'" placeholder="金額" min="0" style="flex:1;">'
+    +'<button class="osb active" id="'+myBtnId+'" onclick="setModalOtherStock('+idx+',\'自在庫\')">自在庫</button>'
+    +'<button class="osb" id="'+shBtnId+'" onclick="setModalOtherStock('+idx+',\'店舗在庫\')">店舗</button>'
+    +'<button class="oab" id="'+addBtnId+'" onclick="addOtherToPending('+idx+')">＋</button>'
+    +'</div>';
+
+  document.getElementById("modal-footer").innerHTML=
+    '<div class="btn-row">'
+    +'<button class="btn-hold" style="color:var(--red);border-color:var(--red);" onclick="deletePending('+idx+')">削除</button>'
+    +'<button class="btn-primary" onclick="settlePending('+idx+')">精算・送信</button>'
+    +'</div>';
+}
+function selectPendingPay(idx,method) {
+  pendingOrders[idx].payMethod=method;
+  renderPendingModal(idx);
+}
+function changePendingQty(orderIdx,itemId,delta) {
+  const order=pendingOrders[orderIdx];
+  const idx=order.items.findIndex(c=>c.id===itemId);
+  if(idx===-1)return;
+  order.items[idx].qty+=delta;
+  if(order.items[idx].qty<=0)order.items.splice(idx,1);
+  renderPendingBar();renderPendingModal(orderIdx);
+}
+function addToPending(idx,name,price,stock,isFood) {
+  const order=pendingOrders[idx];
+  const existing=order.items.find(c=>c.name===name&&c.stock===stock);
+  if(existing){existing.qty++;}
+  else{order.items.push({id:Date.now(),name,price,stock,isFood:!!isFood,qty:1});}
+  renderPendingBar();renderPendingModal(idx);
+  navigator.vibrate&&navigator.vibrate(30);
+}
+function setModalOtherStock(idx,type) {
+  document.getElementById("modal-ost-my-"+idx).classList.toggle("active",type==="自在庫");
+  document.getElementById("modal-ost-shop-"+idx).classList.toggle("active",type==="店舗在庫");
+}
+function addOtherToPending(idx) {
+  const amtEl=document.getElementById("modal-other-amount-"+idx);
+  const val=Number(amtEl.value);
+  if(!val||val<=0)return;
+  const myBtn=document.getElementById("modal-ost-my-"+idx);
+  const stock=myBtn.classList.contains("active")?"自在庫":"店舗在庫";
+  addToPending(idx,"その他",val,stock,false);
+  amtEl.value="";
+  showToast("¥"+val.toLocaleString()+" を追加しました","success");
+}
+async function settlePending(idx) {
+  const order=pendingOrders[idx];
+  if(!order||order.items.length===0)return;
+  await processPayment(order.items, order.memo||"", order.payMethod||"現金");
+  pendingOrders.splice(idx,1);
+  renderPendingBar();
+  document.getElementById("modal-backdrop").classList.add("hidden");
+  activePendingIdx=null;
+}
+function deletePending(idx) {
+  if(!confirm("この保留伝票を削除しますか？"))return;
+  pendingOrders.splice(idx,1);
+  renderPendingBar();
+  document.getElementById("modal-backdrop").classList.add("hidden");
+  activePendingIdx=null;
+  showToast("保留を削除しました","");
 }
 
 // ── Toast ──
-function showToast(msg, type = "") {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast show " + type;
-  setTimeout(() => t.className = "toast", 2500);
+function showToast(msg,type="") {
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast show "+type;
+  setTimeout(()=>t.className="toast",2500);
 }
 
 // ── その他ボタン ──
-document.getElementById("other-amount").addEventListener("input", function() {
-  document.getElementById("other-add-btn").classList.toggle("ready", Number(this.value) > 0);
+document.getElementById("other-amount").addEventListener("input",function(){
+  document.getElementById("other-add-btn").classList.toggle("ready",Number(this.value)>0);
 });
 
 // ── 初期描画 ──
