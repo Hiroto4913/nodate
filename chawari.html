@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>茶割 POS</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -23,8 +23,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .header-date{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:1px;}
 
 /* Bottom nav */
-.bottom-nav{display:flex;border-top:1px solid var(--border);flex-shrink:0;background:var(--bg2);}
-.bnav-btn{flex:1;padding:10px 4px 12px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-family:var(--font);letter-spacing:.04em;transition:color .15s;position:relative;}
+.bottom-nav{display:flex;border-top:1px solid var(--border);flex-shrink:0;background:var(--bg2);padding-bottom:env(safe-area-inset-bottom,0px);}
+.bnav-btn{flex:1;padding:10px 4px 14px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-family:var(--font);letter-spacing:.04em;transition:color .15s;position:relative;}
 .bnav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;}
 .bnav-btn.active{color:var(--accent);}
 .bnav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--red);color:#fff;font-size:9px;font-family:var(--mono);font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--bg2);}
@@ -50,7 +50,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .pending-bar-empty{padding:8px 16px;font-size:12px;color:var(--text3);font-family:var(--mono);}
 
 /* Content */
-.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;padding-bottom:24px;}
 .page{display:none;}
 .page.active{display:block;}
 
