@@ -70,8 +70,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 /* Other input */
 .other-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
 .other-title{font-size:11px;color:var(--text2);letter-spacing:.08em;margin-bottom:10px;font-family:var(--mono);}
-.other-row{display:flex;gap:8px;align-items:center;overflow:hidden;}
-.oi{flex:1;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:0 12px;font-size:16px;font-family:var(--mono);outline:none;-webkit-appearance:none;}
+.other-row{display:flex;gap:8px;align-items:center;}
+.oi{flex:none;width:100px;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:0 12px;font-size:16px;font-family:var(--mono);outline:none;-webkit-appearance:none;}
 .oi:focus{border-color:var(--accent);}
 .osb{height:44px;padding:0 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-family:var(--font);cursor:pointer;white-space:nowrap;}
 .osb.active{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700;}
@@ -284,13 +284,52 @@ const MENU = [
   {name:"ワイン",      price:1100, stock:"店舗在庫",isFood:false},
 ];
 
-let cart         = [];
-let pendingOrders= [];
-let foodQueue    = []; // {id, name, memo, done, time}
-let salesHistory = []; // {id, items, total, myTotal, payMethod, memo, time}
-let otherStock   = "自在庫";
-let currentPage  = 0;
-let showDoneFood = false;
+// ── LocalStorage キー ──
+const LS_PREFIX = "chawari_";
+const LS_DATE   = LS_PREFIX + "date";
+const LS_CART   = LS_PREFIX + "cart";
+const LS_PENDING= LS_PREFIX + "pending";
+const LS_FOOD   = LS_PREFIX + "food";
+const LS_SALES  = LS_PREFIX + "sales";
+
+// ── LocalStorage 読み書き ──
+function lsGet(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+// ── 日付が変わったらリセット ──
+function checkDateReset() {
+  const saved = lsGet(LS_DATE);
+  const today = todayStr();
+  if (saved !== today) {
+    localStorage.removeItem(LS_CART);
+    localStorage.removeItem(LS_PENDING);
+    localStorage.removeItem(LS_FOOD);
+    localStorage.removeItem(LS_SALES);
+    lsSet(LS_DATE, today);
+  }
+}
+
+// ── 状態をLocalStorageに保存 ──
+function saveState() {
+  lsSet(LS_CART,    cart);
+  lsSet(LS_PENDING, pendingOrders);
+  lsSet(LS_FOOD,    foodQueue);
+  lsSet(LS_SALES,   salesHistory);
+}
+
+// ── LocalStorageから状態を復元 ──
+checkDateReset();
+let cart          = lsGet(LS_CART)    || [];
+let pendingOrders = lsGet(LS_PENDING) || [];
+let foodQueue     = lsGet(LS_FOOD)    || [];
+let salesHistory  = lsGet(LS_SALES)  || [];
+let otherStock    = "自在庫";
+let currentPage   = 0;
+let showDoneFood  = false;
 let activePendingIdx = null;
 
 // ── 日付・時間 ──
@@ -390,6 +429,7 @@ function addToCart(name, price, stock, isFood) {
   const existing = cart.find(c=>c.name===name&&c.stock===stock);
   if(existing){existing.qty++;}
   else{cart.push({id:Date.now(),name,price,stock,isFood:!!isFood,qty:1});}
+  saveState();
   updateCartBar();
   renderMenuGrid();
   navigator.vibrate&&navigator.vibrate(30);
@@ -407,6 +447,7 @@ function addOther() {
   cart.push({id:Date.now(),name:"その他",price:val,stock:otherStock,isFood:false,qty:1});
   document.getElementById("other-amount").value="";
   document.getElementById("other-add-btn").classList.remove("ready");
+  saveState();
   updateCartBar();renderMenuGrid();
   showToast("¥"+val.toLocaleString()+" を追加しました","success");
 }
@@ -427,6 +468,7 @@ function changeQty(id,delta) {
   if(idx===-1)return;
   cart[idx].qty+=delta;
   if(cart[idx].qty<=0)cart.splice(idx,1);
+  saveState();
   updateCartBar();renderMenuGrid();
 }
 
@@ -500,6 +542,7 @@ function holdCart() {
   const memo=document.getElementById("cart-memo")?.value||"";
   pendingOrders.push({label:nextLabel(),memo,items:[...cart.map(c=>({...c}))],payMethod:selectedPayMethod});
   cart=[];
+  saveState();
   updateCartBar();renderMenuGrid();renderPendingBar();
   showToast("保留しました","success");
   showPage("menu",0);
@@ -533,6 +576,7 @@ async function processPayment(items, memo, payMethod) {
 
   // 売上履歴に追加
   salesHistory.push({id:Date.now(),items:[...items.map(c=>({...c}))],total,myTotal,payMethod,memo,time});
+  saveState();
 
   // GAS送信
   const date=todayStr(),slot=currentSlot();
@@ -551,7 +595,7 @@ async function processPayment(items, memo, payMethod) {
 }
 
 // ── カートリセット ──
-function clearCart(){cart=[];updateCartBar();renderMenuGrid();}
+function clearCart(){cart=[];saveState();updateCartBar();renderMenuGrid();}
 
 // ── フードページ ──
 function renderFoodPage() {
@@ -604,6 +648,7 @@ function toggleFood(id) {
   const item=foodQueue.find(f=>f.id==id);
   if(!item)return;
   item.done=!item.done;
+  saveState();
   updateFoodBadge();
   renderFoodPage();
   showToast(item.done?"提供済みにしました":"未提供に戻しました","success");
@@ -740,6 +785,7 @@ function changePendingQty(orderIdx,itemId,delta) {
   if(idx===-1)return;
   order.items[idx].qty+=delta;
   if(order.items[idx].qty<=0)order.items.splice(idx,1);
+  saveState();
   renderPendingBar();renderPendingModal(orderIdx);
 }
 function addToPendingByIdx(orderIdx, menuIdx) {
@@ -752,6 +798,7 @@ function addToPending(idx,name,price,stock,isFood) {
   const existing=order.items.find(c=>c.name===name&&c.stock===stock);
   if(existing){existing.qty++;}
   else{order.items.push({id:Date.now(),name,price,stock,isFood:!!isFood,qty:1});}
+  saveState();
   renderPendingBar();renderPendingModal(idx);
   navigator.vibrate&&navigator.vibrate(30);
 }
@@ -774,6 +821,7 @@ async function settlePending(idx) {
   if(!order||order.items.length===0)return;
   await processPayment(order.items, order.memo||"", order.payMethod||"現金");
   pendingOrders.splice(idx,1);
+  saveState();
   renderPendingBar();
   document.getElementById("modal-backdrop").classList.add("hidden");
   activePendingIdx=null;
@@ -781,6 +829,7 @@ async function settlePending(idx) {
 function deletePending(idx) {
   if(!confirm("この保留伝票を削除しますか？"))return;
   pendingOrders.splice(idx,1);
+  saveState();
   renderPendingBar();
   document.getElementById("modal-backdrop").classList.add("hidden");
   activePendingIdx=null;
