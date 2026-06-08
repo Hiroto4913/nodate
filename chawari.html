@@ -71,7 +71,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .other-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
 .other-title{font-size:11px;color:var(--text2);letter-spacing:.08em;margin-bottom:10px;font-family:var(--mono);}
 .other-row{display:flex;gap:8px;align-items:center;}
-.oi{flex:none;width:100px;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:0 12px;font-size:16px;font-family:var(--mono);outline:none;-webkit-appearance:none;}
+.oi{flex:1;height:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:0 12px;font-size:16px;font-family:var(--mono);outline:none;-webkit-appearance:none;}
 .oi:focus{border-color:var(--accent);}
 .osb{height:44px;padding:0 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-family:var(--font);cursor:pointer;white-space:nowrap;}
 .osb.active{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700;}
@@ -268,20 +268,13 @@ const LABELS    = ["A","B","C","D","E","F"];
 
 const MENU = [
   {name:"緑茶割り",    price:500,  stock:"自在庫", isFood:false},
-  {name:"その他茶割",  price:500,  stock:"自在庫", isFood:false},
-  {name:"レモンサワー",  price:700,  stock:"自在庫", isFood:false},
-  {name:"日本酒",  price:1000,  stock:"自在庫", isFood:false},
-  {name:"ミックスナッツ",        price:300,  stock:"自在庫", isFood:true},
-  {name:"漬物",        price:300,  stock:"自在庫", isFood:true},
-  {name:"煮物",        price:300,  stock:"自在庫", isFood:true},
-  {name:"炒め物",        price:300,  stock:"自在庫", isFood:true},
-  {name:"スペシャル",  price:500,  stock:"自在庫", isFood:true},
+  {name:"ほうじ茶割",  price:500,  stock:"自在庫", isFood:false},
+  {name:"小鉢",        price:300,  stock:"自在庫", isFood:true},
   {name:"小鉢4種盛り", price:1000, stock:"自在庫", isFood:true},
-  {name:"ハートランド",    price:700, stock:"店舗在庫",isFood:false},
-  {name:"ヨロッコ生",price:1000,stock:"店舗在庫",isFood:false},
-  {name:"ヨロッコ缶",    price:1100, stock:"店舗在庫",isFood:false},
-  {name:"ハイボール",    price:700, stock:"店舗在庫",isFood:false},
+  {name:"スペシャル",  price:500,  stock:"自在庫", isFood:false},
   {name:"ワイン",      price:1100, stock:"店舗在庫",isFood:false},
+  {name:"ドラフトビール",price:1000,stock:"店舗在庫",isFood:false},
+  {name:"缶ビール",    price:1100, stock:"店舗在庫",isFood:false},
 ];
 
 // ── LocalStorage キー ──
@@ -554,7 +547,9 @@ async function submitCart() {
   const memo=document.getElementById("cart-memo")?.value||"";
   await processPayment(cart,memo,selectedPayMethod);
   cart=[];
-  updateCartBar();renderMenuGrid();
+  saveState();
+  updateCartBar();
+  renderMenuGrid();
   showPage("menu",0);
 }
 
@@ -823,6 +818,7 @@ async function settlePending(idx) {
   pendingOrders.splice(idx,1);
   saveState();
   renderPendingBar();
+  renderMenuGrid();
   document.getElementById("modal-backdrop").classList.add("hidden");
   activePendingIdx=null;
 }
@@ -848,9 +844,11 @@ document.getElementById("other-amount").addEventListener("input",function(){
   document.getElementById("other-add-btn").classList.toggle("ready",Number(this.value)>0);
 });
 
-// ── 初期描画 ──
+// ── 初期描画（LocalStorageから復元後に全UI更新） ──
+updateCartBar();
 renderMenuGrid();
 renderPendingBar();
+updateFoodBadge();
 </script>
 </body>
 </html>
